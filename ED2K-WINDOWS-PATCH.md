@@ -55,3 +55,13 @@ Motrix 创建任务会经过多层准入，漏掉任何一层都会报"此下载
   `--ed2k-server-list=<dir>/server.met --ed2k-node-list=<dir>/nodes.dat --ed2k-server=<ip:port,...>`
 - 实测结果：`serverCount=28`、`connectedServerCount=1`、`kadNodeCount≈75`，说明网络接入成功。
 - 若某个文件仍 0B/s，用 `aria2.tellActive` 查看该任务的 `ed2k.peerCount`；为 0 表示当前网络没有该 hash 的在线源，任何客户端都下不动。
+
+## 6. 多线程下载（已开启）
+
+Motrix 默认传 `--min-split-size=4194304`（4M），ED2K 下分块偏大。包装脚本在转发参数后追加以下覆盖值，确保多线程生效：
+
+```
+--split=16 --max-connection-per-server=16 --min-split-size=1M --ed2k-max-connections=200
+```
+
+注意必须放在 `"${args[@]}"` 之后，让覆盖值最后生效。已通过 `ps` 验证进程参数中同时出现 Motrix 原值和我们的覆盖值，覆盖值在最后。
