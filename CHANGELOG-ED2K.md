@@ -31,3 +31,9 @@ Base: upstream Motrix v2.4.2 (`c601dcf`), with the macOS 12 compatibility patche
 - Actual transfer speed depends entirely on online peers for the file hash. With `CN:0`, 0 B/s is expected in any client.
 - The bundled `aria2-next` is GPL-2.0; MIT applies only to the Motrix source and this fork's patches.
 - Login-item registration is unavailable on macOS 12 (inherited from the base compatibility patch).
+
+## Cold-resource diagnostics
+
+- Added `ed2k-engine/source-lookup.py` to query historical eD2k availability and print matching `ip:port` servers.
+- Added servers reported for the previously supplied hash (`eMule Sunrise`, `Astra-3`, `MO-ad-free`) to the wrapper.
+- Disabled UPnP in the wrapper because it returns error 501; manual router forwarding is documented.

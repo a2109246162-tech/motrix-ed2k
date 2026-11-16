@@ -57,3 +57,13 @@ See [ED2K-WINDOWS-PATCH.md](./ED2K-WINDOWS-PATCH.md) and [PROMPTS_FOR_WINDOWS.md
 ## License
 
 Motrix source and our patches: MIT License (see `LICENSE` and `ATTRIBUTION.md`). The bundled `aria2-next` engine is GPL-2.0; see `THIRD_PARTY_NOTICES.md`.
+
+## Cold resources and "Xunlei-like" speed
+
+Xunlei uses its own central index and offline/cache servers. A pure eD2k client cannot reproduce that. For a cold hash, observed behaviour was:
+
+- UPnP port mapping failed with error 501, so the client is LowID / Kad-firewalled.
+- Kad source lookup returned 8 timeouts and 0 results.
+- `ed2k.shortypower.org` showed only 4 historical sources on 3 servers.
+
+Use `ed2k-engine/source-lookup.py 'ed2k://...' --servers` to query historical availability and get the matching server list. Add those servers to the wrapper. Manually forwarding TCP 4662 / UDP 4672 on the router is required to become HighID; without it, inbound peers remain blocked.

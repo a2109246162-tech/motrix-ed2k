@@ -52,3 +52,9 @@
 - 上游代码风格与规范见仓库内 `AGENTS.md`、`CLAUDE.md`、`CONTRIBUTING.md`、`biome.json`。
 - 不要引入未经授权的商业软件下载测试；所有测试使用合成文件或仅做格式校验。
 - 不要把个人令牌、RPC secret 或邮箱写进源码/文档。
+
+## 提示词 6：冷门资源
+
+```text
+速度为 0 时不要先认定为代码错误。检查 aria2.tellActive 里的 ed2k.peerCount，以及调试日志中的 LowID / 端口映射错误。用 source-lookup.py 查询链接，加入查到的服务器，并在文档中说明纯 eD2k 无法复刻迅雷的中心化加速。
+```

@@ -70,3 +70,10 @@ If patching a built app rather than rebuilding from source, edit the compiled bu
 4. UI: pasting an ED2K link no longer shows `unsupportedProtocol`
 5. RPC: `aria2.tellActive` includes an `ed2k` object with hash/name/length
 6. Use a copyright-safe file for transfer testing; remove the task afterwards
+
+## 7. Cold resources
+
+- UPnP returned HTTP 501 on the tested router; the engine stayed LowID. Manually forward TCP 4662 / UDP 4672.
+- Add `--ed2k-port-mapping=false` when UPnP is known to fail.
+- Use `source-lookup.py <link> --servers` to add servers that historically indexed the hash.
+- This cannot reproduce Xunlei's central index/offline cache. If live peers are zero, speed is zero in any open eD2k client.

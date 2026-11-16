@@ -57,3 +57,13 @@ corepack pnpm exec vitest run src/shared/lib/ed2k-link.test.ts src/shared/lib/do
 ## 许可证
 
 Motrix 源码与我们的补丁：MIT License（见 `LICENSE`、`ATTRIBUTION.md`）。随包 `aria2-next` 引擎为 GPL-2.0，见 `THIRD_PARTY_NOTICES.md`。
+
+## 冷门资源与"迅雷那种效果"
+
+迅雷有自己的中心化索引和离线/缓存服务器，纯 eD2k 客户端无法复刻。对冷门 hash 实测到：
+
+- 路由器 UPnP 返回 501，端口映射失败，客户端处于 LowID / Kad 被防火墙隔离状态。
+- Kad 查源 8 个节点全部超时，0 结果。
+- `ed2k.shortypower.org` 只显示 3 台服务器上的 4 个历史源。
+
+可用 `ed2k-engine/source-lookup.py 'ed2k://...' --servers` 查询历史可用性和对应服务器，并把结果加入包装脚本。要在路由器手动转发 TCP 4662 / UDP 4672 才能变成 HighID；否则入站连接始终受限。

@@ -39,3 +39,9 @@ Run the 64 ED2K tests, tsc --noEmit and Biome. Confirm in the UI that an ED2K li
 - `ED2K-WINDOWS-PATCH.md` — exact file-by-file changes
 - `docs/AGENTS.md`, `docs/CLAUDE.md`, `docs/CONTRIBUTING.md`, `docs/biome.json` — upstream conventions
 - SMB copy: `\\192.168.1.248\公共空间\ed2k\`
+
+## Prompt 6 — Cold resources
+
+```text
+If speed is 0, do not assume a code bug. Check `aria2.tellActive` ed2k.peerCount and debug logs for LowID / port mapping errors. Run source-lookup.py with the link, add the reported servers, and document that Xunlei-like centralized acceleration cannot be reproduced with open eD2k.
+```

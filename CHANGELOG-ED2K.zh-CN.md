@@ -31,3 +31,9 @@
 - 实际传输速度完全取决于该 hash 当前是否有在线源。`CN:0` 时任何客户端都会是 0 B/s。
 - 随包 `aria2-next` 为 GPL-2.0；MIT 仅适用于 Motrix 源码及本分支补丁。
 - macOS 12 上登录项注册不可用（继承自基础兼容补丁）。
+
+## 冷门资源诊断
+
+- 新增 `ed2k-engine/source-lookup.py`，查询历史 eD2k 可用源并输出对应 `ip:port` 服务器。
+- 把之前 hash 对应的 `eMule Sunrise`、`Astra-3`、`MO-ad-free` 加入包装脚本。
+- 因 UPnP 返回 501，包装脚本关闭 UPnP；文档说明需在路由器手动转发端口。

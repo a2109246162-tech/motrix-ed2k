@@ -5,7 +5,7 @@
     "total_users": 129516,
     "total_files": 191563302
   },
-  "server_count": 28,
+  "server_count": 29,
   "servers": [
     {
       "ip": "176.125.242.230",
@@ -510,6 +510,24 @@
       "country_code": "CY",
       "country_name": "Cyprus",
       "flag": "<img src=\"https://flagcdn.io/cy.svg\" width=\"22\" height=\"15\" alt=\"CY\" class=\"flag-icon\" title=\"Cyprus\">"
+    },
+    {
+      "ip": "57.130.51.107",
+      "port": 4232,
+      "udp_port": 4236,
+      "active": true,
+      "name": "MO-ad-free",
+      "description": "Added from ed2k-stats source lookup",
+      "version": "unknown",
+      "users": 0,
+      "files": 0,
+      "max_users": 0,
+      "lowid_users": 0,
+      "soft_files": 0,
+      "hard_files": 0,
+      "country_code": "",
+      "country_name": "",
+      "flag": ""
     }
   ]
 }
