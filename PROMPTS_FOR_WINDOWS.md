@@ -39,6 +39,12 @@
 4. 提交时保持与上游一致的提交信息风格。
 ```
 
+## 提示词 5：直接套用现成补丁（推荐）
+
+```text
+请先阅读 ED2K-WINDOWS-PATCH.md，这是 macOS 版反复实测后整理的逐处补丁清单。请严格按表格里的每个文件、每个白名单加法修改，不要遗漏 plugin 钩子、recovery、session-manager 这几层；漏掉任何一层都会导致界面仍报“此下载不支持 URL 协议”。改完后按文档的 6 项验证清单逐项执行并报告结果。
+```
+
 ## 注意事项
 
 - 上游代码风格与规范见仓库内 `AGENTS.md`、`CLAUDE.md`、`CONTRIBUTING.md`、`biome.json`。

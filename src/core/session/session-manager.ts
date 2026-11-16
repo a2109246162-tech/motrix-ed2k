@@ -1791,6 +1791,7 @@ export class SessionManager {
           'http',
           'https',
           'ftp',
+          'ed2k',
         ]).map((source) => source.requestUrl)
       } catch (error) {
         if (!(error instanceof DownloadSourceError)) throw error

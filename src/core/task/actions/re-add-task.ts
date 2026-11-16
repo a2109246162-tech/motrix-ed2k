@@ -232,6 +232,7 @@ async function buildDirectReAddParams(
     'http',
     'https',
     'ftp',
+    'ed2k',
   ])
   const requestOptions = getProxyOptions()
 

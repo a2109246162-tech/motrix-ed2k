@@ -85,6 +85,7 @@ export function admitTaskCreateRequest(raw: unknown) {
       'http',
       'https',
       'ftp',
+      'ed2k',
     ]).map((source) => source.sourceUrl)
     if (req.uris[0].startsWith('ftp:') && req.headers.length > 0)
       throw new DownloadSourceError({

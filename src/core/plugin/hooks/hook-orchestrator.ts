@@ -272,6 +272,7 @@ export class HookOrchestrator {
         working.uris = admitDownloadSources(working.uris, 'plugin', [
           'http',
           'https',
+          'ed2k',
         ]).map((source) => source.sourceUrl)
         this.recordHttpDiagnostic(entry.id, taskId, 'beforeCreate.output', {
           uris: working.uris,

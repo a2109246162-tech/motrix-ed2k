@@ -415,6 +415,7 @@ async function handleCreateTaskUnderAdmission(
       'http',
       'https',
       'ftp',
+      'ed2k',
     ]).map((source) => source.sourceUrl)
 
   const requestedSaveDir = req.saveDir || appSettings.defaultSaveDir
@@ -909,6 +910,7 @@ async function handleCreateTaskUnderAdmission(
       params.uris = admitDownloadSources(params.uris, 'plugin', [
         'http',
         'https',
+        'ed2k',
       ]).map((source) => source.requestUrl)
       if (result.final.headers.length > 0) {
         params.headers = Object.fromEntries(
@@ -951,6 +953,7 @@ async function handleCreateTaskUnderAdmission(
     params.uris = admitDownloadSources(params.uris, 'plugin', [
       'http',
       'https',
+      'ed2k',
     ]).map((source) => source.requestUrl)
     const metadataRequestProfile = canApplyDirectResourceMetadataProfile(
       params,
