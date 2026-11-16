@@ -45,3 +45,13 @@ Motrix 创建任务会经过多层准入，漏掉任何一层都会报"此下载
 4. 界面：新建任务粘贴 ED2K 链接，不再出现"此下载不支持 URL 协议"
 5. RPC：`aria2.tellActive` 中能看到 `ed2k` 字段（hash/name/length），说明引擎真正接管
 6. 用无版权文件测试；测试后通过 `aria2.remove` 清理任务
+
+## 5. eD2k 网络引导（必须）
+
+只换引擎还不够，必须给 aria2-next 提供服务器和 Kad 节点，否则 `serverCount=0`、`peerCount=0`，一定 0B/s。
+
+- 随包提供 `server.met`（来自 upd.emule-security.org / Telemacore 活跃服务器列表）和 `nodes.dat`（来自 upd.emule-security.org）。
+- 包装脚本启动引擎时追加：
+  `--ed2k-server-list=<dir>/server.met --ed2k-node-list=<dir>/nodes.dat --ed2k-server=<ip:port,...>`
+- 实测结果：`serverCount=28`、`connectedServerCount=1`、`kadNodeCount≈75`，说明网络接入成功。
+- 若某个文件仍 0B/s，用 `aria2.tellActive` 查看该任务的 `ed2k.peerCount`；为 0 表示当前网络没有该 hash 的在线源，任何客户端都下不动。

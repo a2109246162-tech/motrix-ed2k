@@ -21,6 +21,7 @@ EXTRA="$APP/Contents/Resources/extra/$PLATFORM/$ARCH"
 curl -sSL -o "$EXTRA/aria2-next" "$BASE/$ASSET"
 chmod +x "$EXTRA/aria2-next"
 cp "$(dirname "$0")/aria2c-wrapper.sh" "$EXTRA/aria2c"
+cp "$(dirname "$0")/server.met" "$(dirname "$0")/nodes.dat" "$EXTRA/"
 chmod +x "$EXTRA/aria2c"
 codesign --force --sign - "$EXTRA/aria2-next" 2>/dev/null || true
 codesign --force --sign - "$EXTRA/aria2c" 2>/dev/null || true
