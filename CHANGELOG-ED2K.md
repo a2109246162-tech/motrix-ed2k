@@ -1,27 +1,33 @@
-# ED2K edition — change list
+# ED2K Edition — Changelog (English)
 
-Base: this branch is built on the `motrix-macos12` source, itself based on upstream Motrix v2.4.2 (`c601dcf`).
+[简体中文](./CHANGELOG-ED2K.zh-CN.md)
 
-## Changes relative to upstream Motrix 2.4.2
+Base: upstream Motrix v2.4.2 (`c601dcf`), with the macOS 12 compatibility patches from `motrix-macos12`.
 
-| Area | File(s) | Change |
+## Changes
+
+| Area | Files | What changed |
 | --- | --- | --- |
-| ED2K parser | `src/shared/lib/ed2k-link.ts` (new) | Strict eD2k file/server/serverlist parsing, precise diagnostics. |
-| ED2K parser tests | `src/shared/lib/ed2k-link.test.ts` (new) | 17 tests covering common formats and malformed inputs. |
-| Source admission | `src/shared/lib/download-source.ts`, `src/shared/schemas/download-source.ts`, `src/core/task/source-admission.ts` | Add `ed2k` protocol, `invalidEd2k` diagnostic, ED2K branch. |
-| Source admission tests | `src/shared/lib/download-source.test.ts` | 45 tests including ED2K valid/invalid cases. |
-| Download engine | `ed2k-engine/install-engine.sh`, `ed2k-engine/aria2c-wrapper.sh` | Replace bundled aria2 with aria2-next 3.1.0; filter unsupported SQLite options; normalize `--version` output. |
-| Packaging | built `app.asar` in the DMG | Inject the same ED2K recognition logic into the shipped compiled bundle. |
-| Documentation | `FORK-README.md`, `CHANGELOG-ED2K.md`, `THIRD_PARTY_NOTICES.md`, `PROMPTS_FOR_WINDOWS.md` | Explain usage, changes and Windows porting prompts. |
+| ED2K parser | `src/shared/lib/ed2k-link.ts` (new) | Strict parsing of eD2k file/server/serverlist links with precise diagnostics. |
+| Parser tests | `src/shared/lib/ed2k-link.test.ts` (new) | 17 tests covering valid formats and malformed inputs. |
+| Source analysis | `src/shared/lib/download-source.ts`, `src/shared/schemas/download-source.ts` | Added `ed2k` protocol and diagnostic; ED2K branch in `analyzeDownloadSource`. |
+| Admission | `src/core/task/source-admission.ts` (+ `.test.ts`) | Added `ed2k` to default allowlist and to `admitTaskCreateRequest`; tests assert ED2K requests are accepted. |
+| Task creation | `src/core/task/create-task-handler.ts` | Added `ed2k` to input and both plugin-hook allowlists. |
+| Recovery | `src/core/task/actions/re-add-task.ts`, `src/core/session/session-manager.ts` | Added `ed2k` to recovery allowlists. |
+| Plugin hooks | `src/core/plugin/hooks/hook-orchestrator.ts` | Added `ed2k` to plugin allowlist. |
+| Engine | `ed2k-engine/aria2c-wrapper.sh`, `ed2k-engine/install-engine.sh` | Replaced aria2 with aria2-next 3.1.0; filter SQLite options; normalize `--version`; load `server.met` / `nodes.dat`; add active servers; enable 16-way split and 200 ED2K connections. |
+| Network bootstrap | `ed2k-engine/server.met`, `nodes.dat`, `servers.json` | eD2k server/Kad lists from upd.emule-security.org and Telemacore. |
+| Packaged app | `app.asar` in the DMG | Injected the same ED2K logic into the compiled main/renderer bundles; fixed minified-code differences (`dv` vs `Tt`, `n=[...]` vs `t=[...]`, `ba([...])` enum). |
+| Docs | README (EN/ZH), this changelog (EN/ZH), Windows patch/prompts (EN/ZH), `ATTRIBUTION.md`, `THIRD_PARTY_NOTICES.md` | Describe verified behaviour and limitations. |
 
-## Changes relative to `motrix-macos12`
+## Verification
 
-- Adds all ED2K recognition/testing code above.
-- Replaces the bundled `aria2c` with the `aria2-next` engine plus wrapper.
-- Leaves the macOS 12 compatibility patches unchanged.
+- 64 ED2K-related tests pass; `tsc --noEmit` and Biome pass.
+- macOS 12.7.6: app and engine start; RPC `serverCount=28`, `connectedServerCount=1`, `kadNodeCount≈75`.
+- The Office ISO link supplied by the user was only used as a format test case; a dry run reported `CN:0` (no online source). It was not downloaded.
 
 ## Known limitations
 
-- aria2-next is GPL-2.0; the MIT license applies to Motrix source and our patches only.
-- eD2k download speed depends on server/Kad availability and peers.
-- Login-item registration remains unavailable on macOS 12 (from the base compatibility patch).
+- Actual transfer speed depends entirely on online peers for the file hash. With `CN:0`, 0 B/s is expected in any client.
+- The bundled `aria2-next` is GPL-2.0; MIT applies only to the Motrix source and this fork's patches.
+- Login-item registration is unavailable on macOS 12 (inherited from the base compatibility patch).

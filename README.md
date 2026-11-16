@@ -1,309 +1,59 @@
-<div>
-  <img src="./public/app-icon.png" alt="Motrix" width="256" />
-  <h1>Motrix</h1>
-  <p>A modern, full-featured download manager that stays simple to use</p>
-</div>
-
-[![GitHub release](https://img.shields.io/github/v/release/agalwood/Motrix.svg)](https://github.com/agalwood/Motrix/releases) ![Build/release](https://github.com/agalwood/Motrix/workflows/Build/release/badge.svg) ![Total Downloads](https://img.shields.io/github/downloads/agalwood/Motrix/total.svg)
+# Motrix 2.4.2 — macOS 12 + ED2K Edition
 
 English | [简体中文](./README.zh-CN.md)
 
-> **This fork (macOS 12 compatibility edition)** — based on upstream Motrix v2.4.2, patched to run on macOS 12 Monterey. This edition does **not** include any ED2K changes. See [README-MACOS12.md](./README-MACOS12.md) for installation and the full list of changes, and [CHANGELOG-FORK.md](./CHANGELOG-FORK.md) for file-by-file modifications. A full ED2K recognition + download edition is published at `motrix-ed2k`.
+This repository is a fork of [agalwood/Motrix](https://github.com/agalwood/Motrix) v2.4.2. Original author: Dr_rOot / agalwood. Original license: MIT.
 
-## Overview
+It combines the macOS 12 compatibility fixes from `motrix-macos12` with ED2K link recognition and an ED2K-capable download engine.
 
-Motrix is a clean, full-featured desktop download manager for HTTP, FTP, BitTorrent, magnet links, and more.
+## What is actually implemented
 
-**Motrix Turbo** is Motrix v2, rebuilt from the ground up with Electron, React, and TypeScript while keeping the clean, straightforward experience of v1. The download core is independent of the UI. Browser extensions and command-line tools communicate with the app over **MDXP** (Motrix Download eXchange Protocol), an open protocol built on JSON-RPC 2.0, while plugins run in isolated sandboxes.
+| Item | Upstream 2.4.2 | motrix-macos12 | This repository |
+| --- | --- | --- | --- |
+| Runs on macOS 12 | No | Yes | Yes |
+| ED2K link recognized | No (`unsupportedProtocol`) | No | Yes |
+| ED2K task accepted by engine | No | No | Yes (aria2-next 3.1.0) |
+| ED2K bytes transferred | Depends on peers | No | Depends on online sources for the hash |
 
-The same core powers two ways to run Motrix:
+The last row is important. We verified that the ED2K task is accepted by the engine and that `aria2.tellActive` returns `hash`, `name`, `length`, `serverCount` and `kadNodeCount`. We also verified connection to the eD2k server/Kad network. The specific Office ISO link previously provided was tested with `--dry-run` and reported `CN:0`, meaning no online source was found; therefore it shows 0 B/s in any client, including aMule.
 
-- **Desktop app:** Runs on macOS, Windows, and Linux
-- **Headless server:** Runs without a desktop environment, either directly on Node.js or in Docker, and includes a web UI for NAS devices and home servers
+## Changes
 
-## Motrix 2.4.2
+1. Added `src/shared/lib/ed2k-link.ts`: strict eD2k file/server/serverlist parsing with precise diagnostics.
+2. Added `ed2k` to every protocol allowlist in source admission, task creation, plugin hooks, recovery and session restore. Missing any one of these layers caused the `unsupportedProtocol` error.
+3. Replaced the bundled aria2 with `aria2-next` 3.1.0 (native eD2k support).
+4. `ed2k-engine/aria2c-wrapper.sh` filters three unsupported SQLite options, normalizes `--version`, loads `server.met` and `nodes.dat`, adds active eD2k servers, and enables multithreaded settings: `--split=16 --max-connection-per-server=16 --min-split-size=1M --ed2k-max-connections=200`.
+5. Patched the compiled `app.asar` so a packaged app, not only the TypeScript source, accepts ED2K links.
+6. Kept all macOS 12 compatibility patches from `motrix-macos12`.
 
-Deleting a task now cancels its unfinished file finalization recovery, preventing it from being processed again after a restart.
-This release also refreshes Electron, SQLite and WebSocket dependencies.
-Download [v2.4.2 from GitHub Releases](https://github.com/agalwood/Motrix/releases/tag/v2.4.2)
-and read the [full release notes](./docs/release-notes/2.4.2.md).
+See [CHANGELOG-ED2K.md](./CHANGELOG-ED2K.md) for the file-by-file list.
 
-Back up your existing Motrix profile and downloads before upgrading. The bundled
-engine upgrades its SQLite database to schema 6 and keeps a pre-upgrade backup;
-older engines cannot open schema 6. Keep that backup if you may need to downgrade.
-The desktop Migration Assistant imports selected v1 tasks as paused records and
-preserves the original files. Resuming downloads requires a separate explicit
-action. Windows in-place BitTorrent activation requires a supported local NTFS
-volume and explicit authorization. See the [migration guide](./docs/legacy-migration.md)
-for supported volumes, file permissions, and recovery. Keep the original v1 profile.
+## Verification performed
 
-## Screenshots
+- 64 ED2K-related unit tests pass (`ed2k-link`, `download-source`, `source-admission`).
+- `tsc --noEmit` and Biome checks pass.
+- On macOS 12.7.6, the app launches, the engine reports ready, and `aria2-next` runs with the configured server and Kad lists.
+- `serverCount=28`, `connectedServerCount=1`, `kadNodeCount≈75` were observed via RPC.
+- The new-task dialog accepts an ED2K link; the engine accepted the task, and the RPC record contained full ED2K metadata.
+- The provided Office ISO link was **not** downloaded. It is commercial software and was only used as a format test case. A dry run reported `CN:0`.
 
-### Dashboard
+## Download and usage
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./screenshots/motrix-dashboard-en-dark.webp">
-  <source media="(prefers-color-scheme: light)" srcset="./screenshots/motrix-dashboard-en-light.webp">
-  <img alt="Motrix Dashboard" src="./screenshots/motrix-dashboard-en-light.webp">
-</picture>
+Download `Motrix-2.4.2-ed2k-macos12-x64.dmg` from this repository's Releases, open it, and copy Motrix to Applications. If Gatekeeper blocks it, right-click and choose Open.
 
-### Downloads
+Do not use in-app auto-update; it will overwrite the patched files.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./screenshots/motrix-downloads-en-dark.webp">
-  <source media="(prefers-color-scheme: light)" srcset="./screenshots/motrix-downloads-en-light.webp">
-  <img alt="Motrix Downloads" src="./screenshots/motrix-downloads-en-light.webp">
-</picture>
-
-### Settings
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./screenshots/motrix-settings-en-dark.webp">
-  <source media="(prefers-color-scheme: light)" srcset="./screenshots/motrix-settings-en-light.webp">
-  <img alt="Motrix Settings" src="./screenshots/motrix-settings-en-light.webp">
-</picture>
-
-## ✨ Features
-
-- 🕹 Clean, intuitive interface with dark mode
-- 🦄 BitTorrent downloads with per-file selection, plus magnet link support
-- 📡 Built-in tracker list management with automatic updates and health checks
-- 🔌 UPnP and NAT-PMP port mapping
--  🚥  Upload and download limits with multiple speed-limit profiles
--  💾  SQLite-backed sessions that restore downloads after a restart
--  📊  Customizable Dashboard with transfer stats, live activity, and task tiles
-- 🔔 System notifications when downloads finish, plus an in-app notification center
-- 🧩 QuickJS-based plugin sandboxing, fine-grained permissions, and an in-app marketplace
--  🌐  [Motrix Extension](https://github.com/motrixapp/motrix-extension) for Chrome, Edge, and Firefox hands browser downloads off to Motrix in one click
-- ⌨️  Official `@motrix/cli` client for everyday shell use and AI agents
--  🐳  Docker-ready headless server with secure device-code pairing for remote CLI and agent clients
--  🎬  Extensible URL Resolver plugins for extracting media from supported sites
--  🤖  System tray integration and launch at startup
--  🌍  Simplified Chinese and English UI, with more languages planned
--  🔗  Handlers for `motrix://` and `magnet:` links, plus `.torrent` file associations
-
-## 🧩 Ecosystem
-
-Motrix extends beyond the desktop app with a shared protocol library, command-line client, browser extensions, and a complete plugin toolchain:
-
-| Project | Distribution | What it does |
-|---------|--------------|--------------|
-| [`@motrix/mdxp`](https://github.com/motrixapp/mdxp) | npm package | Defines the shared JSON-RPC 2.0 wire schemas and Zod types for MDXP, with helpers for bidirectional connections |
-| [`@motrix/cli`](https://github.com/motrixapp/cli) | npm package | Provides the `motrix` command, automatically discovers a local desktop app, and pairs with remote instances |
-| [Motrix Extension](https://github.com/motrixapp/motrix-extension) | Browser extension | Intercepts downloads in Chrome, Edge, and Firefox (Manifest V3), hands them off to Motrix, and pairs securely with the desktop app over native messaging |
-| [Motrix Plugin SDK](https://github.com/motrixapp/plugin-sdk) | Four npm packages | Includes `@motrix/plugin-manifest-schema`, `@motrix/plugin-api`, `@motrix/plugin-cli`, and `create-motrix-plugin` for developing, testing, and packaging plugins |
-| [Builtin Plugins](https://github.com/motrixapp/builtin-plugins) | Signed `.moext` packages | Includes three official plugins: **Filename Template** for renaming files from a template before they are saved, **Page Scraper** for extracting direct file links from HTML pages, and **URL Resolver** as the foundation for site-specific media resolution |
-| Plugin Registry | Public JSON feed | Publishes plugin listings and install metadata at `dl.motrix.app/registry/plugins.json` for both the website and the in-app marketplace |
-
-### CLI quick start
+From source:
 
 ```bash
-npm install -g @motrix/cli    # Requires Node.js 22 or later
-
-motrix add https://example.com/file.iso --save-dir ~/Downloads
-motrix list                   # List downloads
-motrix watch --stats          # Stream live progress as NDJSON
-motrix pair --name my-nas     # Pair with a remote or headless instance
+corepack pnpm install --frozen-lockfile
+corepack pnpm exec vitest run src/shared/lib/ed2k-link.test.ts src/shared/lib/download-source.test.ts src/core/task/source-admission.test.ts
 ```
 
-### Build a plugin
+## Windows port
 
-The [Motrix Plugin SDK](https://github.com/motrixapp/plugin-sdk) provides the TypeScript API, manifest schema, project scaffolder, and CLI used throughout the plugin development workflow:
+See [ED2K-WINDOWS-PATCH.md](./ED2K-WINDOWS-PATCH.md) and [PROMPTS_FOR_WINDOWS.md](./PROMPTS_FOR_WINDOWS.md). Chinese versions: [ED2K-WINDOWS-PATCH.zh-CN.md](./ED2K-WINDOWS-PATCH.zh-CN.md) and [PROMPTS_FOR_WINDOWS.zh-CN.md](./PROMPTS_FOR_WINDOWS.zh-CN.md). The same material is also in `\\192.168.1.248\公共空间\ed2k\`.
 
-```bash
-pnpm create motrix-plugin my-plugin
-cd my-plugin && pnpm install
-pnpm dev                         # Watch-build and launch Motrix with the plugin
-pnpm exec motrix-plugin validate # Validate motrix-plugin.json
-pnpm run pack                    # Create dist/<id>-<version>.moext
-pnpm exec motrix-plugin lint     # Check the packed bundle
-```
+## License
 
-The default scaffold starts with a `beforeCreate` URL resolver. Pass `post-action` after the project name to start with an `afterComplete` notification plugin instead. Plugins can hook into `beforeCreate`, `beforeFinalize`, `afterComplete`, and `onError`, contribute callable commands and settings, and access the runtime through the `motrix:plugin-api` virtual module.
-
-Plugins are bundled as a single ES2020 module and run inside a QuickJS sandbox without Node.js APIs or direct file and network access. Declare activation events, required capabilities, and URL-scoped host permissions in `motrix-plugin.json`; Motrix shows those requests to the user before granting access. See the [Plugin SDK documentation](https://github.com/motrixapp/plugin-sdk) for templates, the manifest and runtime API references, localization, sandbox constraints, packaging, and distribution.
-
-## Browser extension
-
-Motrix Extension is available from the official browser stores for use with Motrix 2:
-
-- [Chrome Web Store](https://chromewebstore.google.com/detail/motrix-extension/lggbokfckofcgjndaboioakcmincinpo)
-- [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/motrix-extension/efcflljngohddnmfmebiamigoikmdfbf)
-- [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/motrix-extension/)
-
-For installation and pairing, see the [browser extension guide](https://motrix.app/manual/browser-extension/). Development builds remain available from the [extension repository](https://github.com/motrixapp/motrix-extension#manual-browser-workflow-development).
-
-##  📦  Installation
-
-### Desktop app
-
-Download Motrix from [motrix.app](https://motrix.app) and choose the package for your operating system. Most Mac users should choose the Apple Silicon build; Intel builds are available for older Macs with Intel processors.
-
-Desktop packages are available from the GitHub Release linked above. Snap
-builds pass through `latest/edge` and `latest/candidate` before promotion to
-`latest/stable`. Choose the package that matches your operating system and
-architecture:
-
-| Platform | Architectures | Packages / channel | Recommendation |
-|----------|---------------|--------------------|----------------|
-| macOS 13+ | `arm64` (Apple Silicon), `x64` (Intel) | `.dmg` / `.zip` | Use the `.dmg` matching your Mac; choose `x64` only for an Intel-based Mac |
-| Windows 10+ | `x64`, `arm64` | `.exe` (NSIS installer) / `.zip` | Use the `.exe` installer for a normal installation or `.zip` for a manually extracted copy |
-| Linux | `x64`, `arm64` | `.AppImage` / `.deb` / `.rpm` | Use the portable `.AppImage` on any distribution, `.deb` on Debian or Ubuntu, or `.rpm` on Fedora or openSUSE |
-| Linux (Snap Store) | `amd64`, `arm64` | `latest/stable` | Install the strictly confined package with `sudo snap install motrix` after stable promotion |
-| Linux (Flatpak) | `x86_64`, `aarch64` | `.flatpak` | Install a versioned bundle from a release that includes it; see the [Flatpak guide](docs/flatpak.md) |
-| Arch Linux / Omarchy | `x64`, `arm64` | `.pacman` | Install the native Arch package with `sudo pacman -U ./Motrix-<version>-<arch>.pacman`; see the [Arch installation guide](docs/arch-linux.md) |
-
-The `.AppImage` asks on first launch whether to register its desktop entry and
-URL-scheme handlers under your user data directory; declining leaves your system
-untouched. You can enable or remove this desktop integration at any time from
-Settings → Integration.
-The Snap Store package is strictly confined. Its approved `personal-files`
-interface permits Motrix to register Native Messaging hosts for supported
-browsers; it does not grant general access to files outside the normal Snap
-interfaces. Release tags build and validate Flatpak application bundles for
-both architectures before publication. Older releases, including beta.39,
-contain only the Flatpak Native Host companion. These single-file bundles
-require manual upgrades; they do not configure a Motrix update repository.
-Windows ARM64 computers can use the native `arm64` installer or ZIP.
-All 32-bit packages remain unavailable.
-Windows `x64` and `arm64` packages are unsigned and may trigger a Windows SmartScreen
-warning.
-
-### Command-line client
-
-```bash
-npm install -g @motrix/cli
-```
-
-You can also install it from Settings → Integration → Command-line tools in the desktop app.
-
-### Headless server with Docker
-
-Tagged releases publish a multi-architecture Server image to Docker Hub and
-GHCR. Stable releases also update `2.3`, `2`, `stable`, and `latest` after runtime
-verification; beta releases publish only their immutable version tag. The
-included `compose.yaml` keeps Server state separate from downloaded resources:
-
-```bash
-mkdir -p motrix-data downloads
-sudo chown 1000:1000 motrix-data downloads
-export MOTRIX_IMAGE='docker.io/motrixapp/motrix-server:2.4.2'
-export MOTRIX_PUBLIC_URL='http://nas.example.lan:8080'
-docker compose pull server
-docker compose up -d --wait
-```
-
-The runtime is non-root, supports a read-only root filesystem, validates mount
-permissions before accepting work, and preserves downloads, sessions, and
-installed plugins across container replacement. The standard direct-LAN setup
-publishes the Web service on port 8080 and MDXP on port 16801. Set
-`MOTRIX_PUBLIC_URL` to the Web approval URL that remote clients can actually
-reach; the Compose files do not substitute a misleading localhost URL.
-
-If the Web approval URL is temporarily unavailable, an SSH operator can list
-and approve the exact client code without exposing another port:
-
-```bash
-docker compose exec server motrix-admin pairing pending
-docker compose exec server motrix-admin pairing approve ABCD-EFGH
-```
-
-Remote CLI and agent clients pair through the device-code flow. Browser
-extensions can pair with the headless Server when
-`MOTRIX_REMOTE_EXTENSION_ENABLED=true` and
-`MOTRIX_REMOTE_EXTENSION_PUBLIC_URL` is the WS/WSS address entered in the
-Extension. HTTPS remains the default operator requirement. A direct trusted-LAN
-HTTP operator additionally requires
-`MOTRIX_ALLOW_INSECURE_OPERATOR_HTTP=true` and produces a startup warning;
-never enable it on the Internet or an untrusted LAN. Internet access requires a
-TLS reverse proxy and firewall rules around the origin ports. See the
-[Docker Server deployment guide](./docs/docker-server.md) for ownership setup,
-Docker Hub/GHCR image and tag selection, DSM 7 and fnOS installation, ports,
-diagnostics, and backup/upgrade instructions.
-
-##  🛠  Development
-
-Development requires Node.js 22 or later and pnpm. Use the pnpm version specified by the `packageManager` field in `package.json`.
-
-```bash
-git clone https://github.com/agalwood/Motrix.git
-cd Motrix
-
-pnpm install     # Install dependencies, download aria2 for your platform, and rebuild native modules
-pnpm start       # Start the Electron app in development mode with Vite HMR in the renderer
-
-pnpm test        # Run the Vitest unit tests
-pnpm test:e2e    # Run the Playwright E2E tests
-pnpm run lint    # Run Biome checks
-
-pnpm build       # Fetch signed built-in plugins, then build the native host and four Vite targets
-```
-
-### Preview the in-window application menu on macOS
-
-Windows and Linux render the application menu inside the Motrix window. To
-preview that chrome while developing on macOS, start the app with the preview
-flag enabled:
-
-```bash
-MOTRIX_PREVIEW_MAC_MENU=1 pnpm start
-```
-
-The flag hides the main window's macOS traffic-light buttons, enables the
-renderer dropdown menu, and shows the custom window controls used on Windows.
-Linux uses Electron's Window Controls Overlay to follow supported desktop
-button layouts and themes; validate those native controls in a Linux desktop
-session. Collapse the sidebar in preview mode to check the application menu,
-attached actions, drag region, and caption-control safe areas together.
-Restart the development process after changing the flag because both Electron
-and Vite read it at startup.
-
-This mode is intended for layout and command-item debugging. Electron routes
-macOS role items through AppKit's native menu, so role-backed actions such as
-**Window → Minimize** do not behave identically when invoked from the preview
-dropdown. Validate those native role actions on Windows or Linux.
-
-See the scripts in `package.json` for the available packaging commands. Platform-specific settings for macOS, Windows, and Linux live in `electron-builder.json`.
-
-##  🔧  Tech stack
-
-| Area | Stack |
-|------|-------|
-| Desktop shell | Electron 44 |
-| UI | React 19 + Tailwind CSS 4 + shadcn/ui |
-| Language | TypeScript in strict mode |
-| Build system | Vite 8 with separate main, preload, worker, and renderer targets |
-| Validation | Zod 4 for settings, IPC payloads, and wire schemas |
-| Download engine | A Motrix-maintained fork of [aria2](https://github.com/motrixapp/aria2), bundled with the app |
-| Persistence | better-sqlite3 for download session storage and recovery |
-| Plugin sandbox | quickjs-emscripten |
-| Server runtime | Node.js + Fastify + WebSocket |
-| Internationalization | i18next + react-i18next |
-| Quality tooling | Biome, Vitest, and Playwright |
-
-The codebase has four strict layers. CI enforces the dependency boundaries between them, keeping the core portable and leaving a clear path for a future Rust rewrite:
-
-```
-renderer (React UI)
-   |  IPC via window.motrix
-app core (tasks, settings, plugins, bridge)
-   |
-engine adapter
-   |
-aria2 (download engine)
-```
-
-The Electron desktop app and the Node.js headless server share the same core. Platform-specific capabilities such as notifications and secret storage have separate implementations with consistent behavior.
-
-## 🤝 Contributing
-
-Contributions of code, tests, documentation, translations, issue reports, and design feedback are welcome. Before opening a pull request, read the [contribution guidelines](./CONTRIBUTING.md) for the development workflow, architecture boundaries, implementation standards, and required validation.
-
-All participants must follow the [Code of Conduct](./CODE_OF_CONDUCT.md). Report suspected vulnerabilities privately according to the [Security Policy](./SECURITY.md), not through a public issue or discussion.
-
-##  📜  License
-
-[MIT](./LICENSE) © 2018-present Dr_rOot
-
-See [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md) for third-party license information.
-Release packages also include a generated dependency inventory, consolidated license texts, and an SPDX 2.3 SBOM under `legal/`.
+Motrix source and our patches: MIT License (see `LICENSE` and `ATTRIBUTION.md`). The bundled `aria2-next` engine is GPL-2.0; see `THIRD_PARTY_NOTICES.md`.

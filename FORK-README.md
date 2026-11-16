@@ -44,8 +44,11 @@ corepack pnpm exec vitest run src/shared/lib/ed2k-link.test.ts src/shared/lib/do
 
 ## 验证结果
 
-- 单元测试：62 个 ED2K 相关测试通过（含你提供的 Office 链接作为**格式样例**，不下载）。
-- 引擎验证：aria2-next 3.1.0 接受 Motrix 的全部启动参数（过滤 SQLite 参数后），RPC 正常启动；合成 ED2K 链接干跑成功进入 eD2k 传输状态。
+- 单元测试：64 个 ED2K 相关测试通过（含你提供的 Office 链接作为**格式样例**，不下载）。
+- 引擎验证：aria2-next 3.1.0 接受 Motrix 的启动参数（过滤 SQLite 参数后），RPC 正常启动；合成 ED2K 链接干跑成功进入 eD2k 传输状态。
+- 网络验证：加载 `server.met` / `nodes.dat` 后，`serverCount=28`、`connectedServerCount=1`、`kadNodeCount≈75`。
+- 多线程：包装脚本强制覆盖 `--split=16 --max-connection-per-server=16 --min-split-size=1M --ed2k-max-connections=200`。
+- 你提供的 Office 链接干跑结果 `CN:0`，说明当前 eD2k 网络没有该 hash 的在线源，因此显示 0B/s；这属于网络现象，不是识别或引擎故障。
 - macOS 12.7.6 实机：应用启动，引擎就绪，aria2-next 进程运行，无新增错误日志。
 
 ## 许可证
