@@ -2219,6 +2219,26 @@ describe('Aria2Adapter', () => {
       }
     })
 
+    it('accepts aria2-next pending-stop errors without a hash mark', async () => {
+      vi.useFakeTimers()
+      try {
+        const rpc = createMockRpc()
+        const gid = '82558c47449de032'
+        vi.mocked(rpc.removeDownloadResult)
+          .mockRejectedValueOnce(
+            new Error(`Could not remove download result of GID ${gid}`)
+          )
+          .mockResolvedValue('OK')
+        const adapter = new Aria2Adapter(rpc)
+        const result = adapter.removeDownloadResult(gid)
+        await vi.runAllTimersAsync()
+        await result
+        expect(rpc.removeDownloadResult).toHaveBeenCalledTimes(2)
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+
     it('bounds pending-stop retries and retains the failure', async () => {
       vi.useFakeTimers()
       try {

@@ -61,3 +61,10 @@ Base: upstream Motrix v2.4.2 (`c601dcf`), with the macOS 12 compatibility patche
 - Added `ed2k-contribution.json` tracking in the sharing monitor: per-day, per-task upload deltas, 90-day retention.
 - Added `query:getEd2kContribution` and a detail dialog opened from the transfer tile.
 - The transfer tile now always shows **ED2K 已贡献**, including when total transfer is zero.
+
+## Output name and finalize fixes
+
+- ED2K links are no longer passed through `new URL()`. `ed2kLinkFilename()` extracts and percent-decodes the file name carried by the link, so a task is named `deepin-...iso`, not `download`.
+- The HTTP create path now uses that name for `out`, the incomplete `.motrix` file, and the final rename.
+- `removeDownloadResult` now accepts aria2-next's error text without a hash mark (`GID <gid>` as well as `GID#<gid>`). Without this, a completed ED2K download stalled at `.motrix` with "Could not remove download result".
+- End-to-end check: a 3.3 MB ED2K PDF completed, finalized as `[Wiley] Ubuntu Linux Toolbox ....pdf`, and `file` reports `PDF document, version 1.6`.

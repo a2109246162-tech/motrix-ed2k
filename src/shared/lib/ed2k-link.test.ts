@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseEd2kLink } from './ed2k-link'
+import { ed2kLinkFilename, parseEd2kLink } from './ed2k-link'
 
 describe('ED2K link recognition', () => {
   it.each([
@@ -95,5 +95,27 @@ describe('ED2K link recognition', () => {
     expect(link.slice(result.start, result.end)).toBe(
       'FF7FF2D5919E3A560151BBC11C399D1'
     )
+  })
+})
+
+describe('ED2K output filename', () => {
+  it('uses the name carried by the file link', () => {
+    expect(
+      ed2kLinkFilename(
+        'ed2k://|file|example.iso|1234|0123456789ABCDEF0123456789ABCDEF|/'
+      )
+    ).toBe('example.iso')
+  })
+
+  it('decodes percent-encoded file names', () => {
+    expect(
+      ed2kLinkFilename(
+        'ed2k://|file|deepin%2025.2.iso|1234|0123456789ABCDEF0123456789ABCDEF|/'
+      )
+    ).toBe('deepin 25.2.iso')
+  })
+
+  it('returns null for non-file links', () => {
+    expect(ed2kLinkFilename('ed2k://|server|1.2.3.4|4661|/')).toBeNull()
   })
 })

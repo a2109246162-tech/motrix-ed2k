@@ -225,6 +225,18 @@ describe('source admission before side effects', () => {
     for (const fn of [plugin, probe, resolve]) expect(fn).not.toHaveBeenCalled()
   })
 
+  it('names an ED2K task from the link instead of falling back to download', async () => {
+    const deps = makeDeps()
+    const uri =
+      'ed2k://|file|example.iso|1234|0123456789ABCDEF0123456789ABCDEF|/'
+    await handleCreateTask({ ...httpRequest(), uris: [uri] }, deps)
+    expect(deps.addUri).toHaveBeenCalledWith(
+      [uri],
+      expect.objectContaining({ dir: '/d', out: 'example.iso.motrix' })
+    )
+    expect(deps.add.mock.calls[0][0].name).toBe('example.iso')
+  })
+
   it('reuses a persisted receipt even when the prepared directory differs from the request', async () => {
     const deps = makeDeps({ prepareSaveDir: async () => '/resolved-dir' })
     const { addUri, add } = deps

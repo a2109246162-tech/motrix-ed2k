@@ -61,3 +61,10 @@
 - 分享监控器新增 `ed2k-contribution.json`：按天、按任务记录上传增量，保留 90 天。
 - 新增 `query:getEd2kContribution` 和明细弹窗，从传输卡片点击进入。
 - 传输卡片现在始终显示 **ED2K 已贡献**，总流量为 0 时也显示。
+
+## 输出名称与最终化修复
+
+- ED2K 链接不再走 `new URL()`。`ed2kLinkFilename()` 从链接中提取文件名并做百分号解码，任务名会是 `deepin-...iso`，不再是 `download`。
+- HTTP 创建链路用这个名称生成 `out`、`.motrix` 临时文件和最终重命名。
+- `removeDownloadResult` 现在同时接受 aria2-next 不带井号的错误文本（`GID <gid>` 和 `GID#<gid>`）。不修的话，下载完成后会卡在 `.motrix`，报 "Could not remove download result"。
+- 端到端实测：3.3 MB 的 ED2K PDF 完成并最终化为 `[Wiley] Ubuntu Linux Toolbox ....pdf`，`file` 识别为 `PDF document, version 1.6`。

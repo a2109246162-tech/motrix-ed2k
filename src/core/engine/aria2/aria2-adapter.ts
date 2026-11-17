@@ -1222,7 +1222,9 @@ export class Aria2Adapter implements EngineAdapter {
         if (isNotFoundError(err) && this.trustsNotFound()) return
         const message = err instanceof Error ? err.message : String(err)
         const pendingStop =
-          message === `Could not remove download result of GID#${engineTaskId}`
+          message ===
+            `Could not remove download result of GID#${engineTaskId}` ||
+          message === `Could not remove download result of GID ${engineTaskId}`
         if (!pendingStop || attempt >= 6) throw err
         await delay(Math.min(100 * 2 ** attempt, 1000))
       }

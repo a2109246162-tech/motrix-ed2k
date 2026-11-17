@@ -172,3 +172,7 @@ The dashboard's transfer tile shows **ED2K 已贡献** with the lifetime total u
 - the top tasks that received your upload for each day
 
 The counter is updated by the same 10-second monitor that enforces sharing ratios. It is stored in `ed2k-contribution.json` under the Motrix user-data directory and keeps 90 days of history.
+
+## ED2K names and finalization
+
+An ED2K link is not a URL, so it must not go through `new URL()`. The app extracts and percent-decodes the file name from the link, then uses it for the `.motrix` temporary file and the final rename. Finalization also accepts aria2-next's `GID <gid>` error text, so a completed download cannot stall at the temporary file.

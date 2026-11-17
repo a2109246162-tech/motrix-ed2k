@@ -31,6 +31,7 @@ import {
 import type { SettingsManager } from '@core/settings/settings-manager'
 import { INCOMPLETE_SUFFIX } from '@shared/constants/incomplete'
 import { AppError, ErrorCode } from '@shared/errors'
+import { ed2kLinkFilename } from '@shared/lib/ed2k-link'
 import type {
   TaskCreateRequest,
   TaskCreateSuccessResult,
@@ -967,7 +968,7 @@ async function handleCreateTaskUnderAdmission(
     // name onto that final URI before probing, so a failed/empty metadata
     // response cannot resurrect the original request's basename.
     if (!req.filename?.trim()) {
-      await pickHttpName(uriBasename(params.uris[0]) ?? 'download')
+      await pickHttpName(sourceFilename(params.uris[0]) ?? 'download')
     }
 
     assertPluginPolicyCurrent?.()
@@ -1376,7 +1377,7 @@ function deriveDesiredName(
   if (req.type === 'http') {
     const fname = req.filename?.trim()
     if (fname) return fname
-    const fromUri = uriBasename(req.uris[0])
+    const fromUri = sourceFilename(req.uris[0])
     if (fromUri) return fromUri
     return 'download'
   }
@@ -1501,6 +1502,14 @@ function assertSupportedHttpTaskProxy(proxy: string | undefined): void {
     ErrorCode.TaskCreateFailed,
     'Task proxy must use aria2-compatible HTTP or HTTPS syntax; configure SOCKS5 as the global download proxy instead'
   )
+}
+
+function sourceFilename(uri: string | undefined): string | null {
+  if (uri?.startsWith('ed2k://')) {
+    const name = ed2kLinkFilename(uri)
+    if (name) return sanitizeRemoteFilename(name)
+  }
+  return uriBasename(uri)
 }
 
 function uriBasename(uri: string | undefined): string | null {

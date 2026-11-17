@@ -195,3 +195,19 @@ export function parseEd2kLink(raw: string): Ed2kParseResult {
     canonical: `${canonicalScheme}|serverlist|${url}|/`,
   }
 }
+
+/**
+ * Return the file name carried by an ED2K file link.
+ *
+ * `new URL()` cannot parse `ed2k://|file|name|size|hash|/`, so callers that
+ * need a display/output name must use this helper instead of a URL basename.
+ */
+export function ed2kLinkFilename(raw: string): string | null {
+  const parsed = parseEd2kLink(raw)
+  if (parsed.status !== 'valid' || parsed.link.kind !== 'file') return null
+  try {
+    return decodeURIComponent(parsed.link.name)
+  } catch {
+    return parsed.link.name
+  }
+}
