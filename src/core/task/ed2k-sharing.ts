@@ -193,7 +193,7 @@ export function getEd2kContribution(
         bytes: bytes.toString(),
         tasks: entries.sort((a, b) => {
           const diff = BigInt(b.bytes) - BigInt(a.bytes)
-          return diff > 0n ? -1 : diff < 0n ? 1 : 0
+          return diff > 0n ? 1 : diff < 0n ? -1 : 0
         }),
       }
     })
