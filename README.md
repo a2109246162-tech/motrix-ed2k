@@ -1,90 +1,163 @@
-# Motrix 2.4.2 — macOS 12 + ED2K Edition
+<div align="center">
+
+<img src="./public/app-icon.png" alt="Motrix ED2K" width="128" />
+
+# Motrix 2.4.2 · ED2K Edition
+
+**A macOS 12-compatible Motrix fork with native ED2K recognition, an aria2-next engine, and reciprocal per-task sharing.**
+
+[![Platform](https://img.shields.io/badge/platform-macOS%2012%2B-blue.svg)](#requirements)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
+[![Engine](https://img.shields.io/badge/engine-aria2--next%203.1.0-orange.svg)](./ed2k-engine)
+[![Tests](https://img.shields.io/badge/ED2K%20tests-35%20passing-brightgreen.svg)](#verification)
 
 English | [简体中文](./README.zh-CN.md)
 
-This repository is a fork of [agalwood/Motrix](https://github.com/agalwood/Motrix) v2.4.2. Original author: Dr_rOot / agalwood. Original license: MIT.
+</div>
 
-It combines the macOS 12 compatibility fixes from `motrix-macos12` with ED2K link recognition and an ED2K-capable download engine.
+---
 
-## What is actually implemented
+## Overview
 
-| Item | Upstream 2.4.2 | motrix-macos12 | This repository |
-| --- | --- | --- | --- |
-| Runs on macOS 12 | No | Yes | Yes |
-| ED2K link recognized | No (`unsupportedProtocol`) | No | Yes |
-| ED2K task accepted by engine | No | No | Yes (aria2-next 3.1.0) |
-| ED2K bytes transferred | Depends on peers | No | Depends on online sources for the hash |
+This project is a focused fork of [agalwood/Motrix](https://github.com/agalwood/Motrix) v2.4.2. It keeps Motrix's desktop experience and adds the two things upstream deliberately does not provide: **ED2K link admission** and **an engine that actually speaks eD2k**.
 
-The last row is important. We verified that the ED2K task is accepted by the engine and that `aria2.tellActive` returns `hash`, `name`, `length`, `serverCount` and `kadNodeCount`. We also verified connection to the eD2k server/Kad network. The specific Office ISO link previously provided was tested with `--dry-run` and reported `CN:0`, meaning no online source was found; therefore it shows 0 B/s in any client, including aMule.
+It is built for macOS 12 Monterey, which is the last macOS release supported by many Intel Macs. The original 2.4.2 build does not launch there; this fork keeps the macOS 12 compatibility patches and adds ED2K support on top.
 
-## Changes
+> This is an independent community fork. It is not affiliated with the Motrix upstream project, Microsoft, or Xunlei.
 
-1. Added `src/shared/lib/ed2k-link.ts`: strict eD2k file/server/serverlist parsing with precise diagnostics.
-2. Added `ed2k` to every protocol allowlist in source admission, task creation, plugin hooks, recovery and session restore. Missing any one of these layers caused the `unsupportedProtocol` error.
-3. Replaced the bundled aria2 with `aria2-next` 3.1.0 (native eD2k support).
-4. `ed2k-engine/aria2c-wrapper.sh` filters three unsupported SQLite options, normalizes `--version`, loads `server.met` and `nodes.dat`, adds active eD2k servers, and enables multithreaded settings: `--split=16 --max-connection-per-server=16 --min-split-size=1M --ed2k-max-connections=200`.
-5. Patched the compiled `app.asar` so a packaged app, not only the TypeScript source, accepts ED2K links.
-6. Kept all macOS 12 compatibility patches from `motrix-macos12`.
+## Features
 
-See [CHANGELOG-ED2K.md](./CHANGELOG-ED2K.md) for the file-by-file list.
+| Feature | Status |
+| --- | --- |
+| ED2K file, server and serverlist links | Parsed and admitted through every Motrix layer |
+| ED2K engine | Bundled `aria2-next 3.1.0` with eD2k/Kad support |
+| Server and Kad bootstrap | `server.met` + `nodes.dat`, refreshed active-server list |
+| Multi-threaded transfer | 16-way split, 200 eD2k connections, 1 MiB minimum split |
+| Per-task sharing ratio | Right-click a task, choose 0–10× the file size with a slider |
+| Global sharing switch | Settings → BitTorrent → ED2K 分享 |
+| HTTP / HTTPS / FTP / BT / Magnet | Preserved from upstream |
+| macOS 12 compatibility | Preserved from `motrix-macos12` |
 
-## Verification performed
+## Screenshots
 
-- 64 ED2K-related unit tests pass (`ed2k-link`, `download-source`, `source-admission`).
-- `tsc --noEmit` and Biome checks pass.
-- On macOS 12.7.6, the app launches, the engine reports ready, and `aria2-next` runs with the configured server and Kad lists.
-- `serverCount=28`, `connectedServerCount=1`, `kadNodeCount≈75` were observed via RPC.
-- The new-task dialog accepts an ED2K link; the engine accepted the task, and the RPC record contained full ED2K metadata.
-- The provided Office ISO link was **not** downloaded. It is commercial software and was only used as a format test case. A dry run reported `CN:0`.
+<p align="center">
+  <img src="./screenshots/motrix-downloads-en-light.webp" alt="Downloads" width="820" />
+</p>
 
-## Download and usage
+<p align="center">
+  <img src="./screenshots/motrix-settings-en-light.webp" alt="Settings" width="820" />
+</p>
 
-Download `Motrix-2.4.2-ed2k-macos12-x64.dmg` from this repository's Releases, open it, and copy Motrix to Applications. If Gatekeeper blocks it, right-click and choose Open.
+## Requirements
 
-Do not use in-app auto-update; it will overwrite the patched files.
+- macOS 12.0 or later (tested on macOS 12.7.6, Intel x64)
+- An internet connection that permits eD2k traffic
+- For best eD2k performance: a reachable TCP/UDP port (see [Network](#network-and-speed))
 
-From source:
+## Install
+
+1. Download `Motrix-2.4.2-ed2k-macos12-x64.dmg` from [Releases](../../releases).
+2. Open the DMG and drag **Motrix ED2K** into **Applications**.
+3. On first launch, right-click the app and choose **Open** if Gatekeeper blocks it.
+
+The build is ad-hoc signed, not notarized. Do not enable in-app auto-update; it would replace the patched engine.
+
+## Use
+
+### Download an ED2K file
+
+Paste an `ed2k://|file|...|/` link into **New Task → Links**. The app validates the hash and size, admits the task, and hands it to aria2-next.
+
+### Share back
+
+Open **Settings → BitTorrent → ED2K 分享** and keep **为 ED2K 资源提供带宽** enabled. Then right-click any ED2K task:
+
+- slider **0** — stop uploading after the download completes
+- slider **0.5** — default; upload 50% of the downloaded bytes
+- slider **1–10** — upload 1× to 10× the file size
+- **不限** — keep seeding without a ratio limit
+
+For a 1 GB file, 0.5 means a 0.5 GB target, 1 means 1 GB, 10 means 10 GB. The monitor checks every 10 seconds and removes the engine task at the target without deleting the downloaded file.
+
+## Network and speed
+
+eD2k is peer-to-peer. Speed is determined by **live sources**, their upload bandwidth, and whether your client is reachable. Xunlei's 10–20 MB/s comes from its own central cache and CDN; a public eD2k client cannot reproduce that.
+
+Run the built-in diagnostic while the app is running:
+
+```bash
+python3 ed2k-engine/diagnose.py
+```
+
+It prints the live RPC view: connected servers, LowID, Kad nodes, port mapping, and per-task peer counts.
+
+Measured on the development machine:
+
+```
+lowId: true
+kadFirewalled: true
+portMapping: off
+connectedServerCount: 1
+peerCount: 0   # for the paused test task
+```
+
+That is a network/source condition, not a connection-cap bug. For a better chance of HighID, forward **TCP 4662** and **UDP 4672** to the Mac's LAN address on the router. UPnP returned error 501 on the test router, so automatic mapping is disabled.
+
+## Build from source
 
 ```bash
 corepack pnpm install --frozen-lockfile
-corepack pnpm exec vitest run src/shared/lib/ed2k-link.test.ts src/shared/lib/download-source.test.ts src/core/task/source-admission.test.ts
+
+# Type check and focused tests
+corepack pnpm exec tsc --noEmit
+corepack pnpm exec vitest run \
+  src/shared/lib/ed2k-link.test.ts \
+  src/shared/lib/download-source.test.ts \
+  src/core/task/source-admission.test.ts \
+  src/core/task/ed2k-sharing.test.ts \
+  src/core/engine/aria2/feature-report.test.ts
+
+# Build the Electron bundles
+corepack pnpm run build:electron
+corepack pnpm exec node scripts/stage-electron-app.mjs --platform darwin --arch x64
 ```
 
-## Windows port
+The engine lives in `ed2k-engine/`. See [`ed2k-engine/README.md`](./ed2k-engine/README.md) for the wrapper, server list, Kad list and diagnostic tool.
 
-See [ED2K-WINDOWS-PATCH.md](./ED2K-WINDOWS-PATCH.md) and [PROMPTS_FOR_WINDOWS.md](./PROMPTS_FOR_WINDOWS.md). Chinese versions: [ED2K-WINDOWS-PATCH.zh-CN.md](./ED2K-WINDOWS-PATCH.zh-CN.md) and [PROMPTS_FOR_WINDOWS.zh-CN.md](./PROMPTS_FOR_WINDOWS.zh-CN.md). The same material is also in `\\192.168.1.248\公共空间\ed2k\`.
+## Architecture
 
-## License
+```
+Motrix renderer / main process
+        │  ED2K admission + per-task sharing policy
+        ▼
+  aria2-next 3.1.0
+        │  eD2k + Kad protocol
+        ▼
+  server.met / nodes.dat / peers
+```
 
-Motrix source and our patches: MIT License (see `LICENSE` and `ATTRIBUTION.md`). The bundled `aria2-next` engine is GPL-2.0; see `THIRD_PARTY_NOTICES.md`.
+The fork does not reimplement eD2k. It removes Motrix's protocol whitelist blocks, ships a native eD2k engine, bootstraps the network, and adds the sharing policy at the application layer.
 
-## Cold resources and "Xunlei-like" speed
+## Verification
 
-Xunlei uses its own central index and offline/cache servers. A pure eD2k client cannot reproduce that. For a cold hash, observed behaviour was:
+- 35 ED2K-focused tests pass.
+- `tsc --noEmit` passes.
+- Biome check passes on changed files.
+- On macOS 12.7.6 the app launches, aria2-next starts with server and Kad lists, and the ED2K task is accepted with full `ed2k` metadata.
+- The false "non-Motrix aria2" warning is gone; `aria2-next` / `3.1.0-motrix-ed2k` is recognized as a supported engine.
 
-- UPnP port mapping failed with error 501, so the client is LowID / Kad-firewalled.
-- Kad source lookup returned 8 timeouts and 0 results.
-- `ed2k.shortypower.org` showed only 4 historical sources on 3 servers.
+## Known limitations
 
-Use `ed2k-engine/source-lookup.py 'ed2k://...' --servers` to query historical availability and get the matching server list. Add those servers to the wrapper. Manually forwarding TCP 4662 / UDP 4672 on the router is required to become HighID; without it, inbound peers remain blocked.
+- eD2k speed cannot exceed the available live sources. A cold hash can remain at 0 B/s in every open client.
+- UPnP may fail on some routers (error 501 was observed); manual port forwarding is required for HighID.
+- The bundled engine is GPL-2.0; the Motrix source and this fork's patches are MIT.
+- macOS 12 login-item registration is inherited from the base compatibility patch and remains unavailable.
 
-## Per-task ED2K sharing ratio
+## Credits and license
 
-Right-click an ED2K task in the Downloads list and choose **ED2K 分享比例**. Options: unlimited, no sharing (stop upload after completion), 1:1, 1.5:1, 2:1, 3:1 and 5:1. The app stores the choice in `ed2k-sharing.json` under the Motrix user-data directory and checks every 10 seconds using `uploadLength` from aria2-next. When the ratio is reached, the engine task is removed while the downloaded file remains.
+- Upstream: [agalwood/Motrix](https://github.com/agalwood/Motrix), MIT.
+- macOS 12 base: `motrix-macos12`.
+- eD2k engine: [aria2-next](https://github.com/AnInsomniacy/aria2-next), GPL-2.0.
+- Server/Kad data: `upd.emule-security.org` and the Telemacore active-server list.
 
-This implements "download as much as you give back" per task. eD2k already has a credit system, but aria2-next does not expose a per-task eD2k ratio option, so the fork enforces it at the application layer.
-
-Speed note: Xunlei's 10–20 MB/s comes from its central cache and CDN, not from public eD2k. Open eD2k speed depends on live sources and upload bandwidth. This fork cannot create sources that do not exist.
-
-## Sharing settings update (final)
-
-- Settings → BitTorrent → **ED2K 分享** contains **为 ED2K 资源提供带宽** (on by default). When off, every ED2K task stops uploading after completion.
-- Right-click an ED2K task → **ED2K 分享比例** shows a slider from 0 to 10. Left = 0 (stop upload after completion); right = 10x the file size. Presets: 0.5 (default), 1, 2, 10 and unlimited.
-- The ratio is per task and applies continuously: a 1 GB file at 0.5 targets 0.5 GB uploaded; at 2 it targets 2 GB; at 10 it targets 10 GB.
-- Fixed the false **non-Motrix aria2** compatibility notification. aria2-next is now recognised as the supported ED2K engine, so connection options are no longer capped at 16.
-
-## Speed diagnosis
-
-Run `python3 ed2k-engine/diagnose.py` while the app is running. It prints the live RPC view: connected servers, LowID, Kad nodes, port mapping, and per-task peer counts.
-
-Measured on this machine: `lowId=true`, `kadFirewalled=true`, `portMapping=off`, only 1 connected server and 0 peers for the paused task. That is a network/source condition, not a connection-cap bug. To improve it, forward TCP 4662 and UDP 4672 to the Mac's LAN address (192.168.1.7 here) on the router; UPnP failed with error 501 on this router. A paused task must also be resumed before any speed can appear.
+See [`LICENSE`](./LICENSE), [`ATTRIBUTION.md`](./ATTRIBUTION.md), and [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md).
