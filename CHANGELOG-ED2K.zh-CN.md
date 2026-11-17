@@ -68,3 +68,5 @@
 - HTTP 创建链路用这个名称生成 `out`、`.motrix` 临时文件和最终重命名。
 - `removeDownloadResult` 现在同时接受 aria2-next 不带井号的错误文本（`GID <gid>` 和 `GID#<gid>`）。不修的话，下载完成后会卡在 `.motrix`，报 "Could not remove download result"。
 - 端到端实测：3.3 MB 的 ED2K PDF 完成并最终化为 `[Wiley] Ubuntu Linux Toolbox ....pdf`，`file` 识别为 `PDF document, version 1.6`。
+
+- 任务详情里的类型现在显示为 `ED2K`，不再显示内部传输类型 `HTTP`。

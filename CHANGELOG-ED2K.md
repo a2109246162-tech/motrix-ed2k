@@ -68,3 +68,5 @@ Base: upstream Motrix v2.4.2 (`c601dcf`), with the macOS 12 compatibility patche
 - The HTTP create path now uses that name for `out`, the incomplete `.motrix` file, and the final rename.
 - `removeDownloadResult` now accepts aria2-next's error text without a hash mark (`GID <gid>` as well as `GID#<gid>`). Without this, a completed ED2K download stalled at `.motrix` with "Could not remove download result".
 - End-to-end check: a 3.3 MB ED2K PDF completed, finalized as `[Wiley] Ubuntu Linux Toolbox ....pdf`, and `file` reports `PDF document, version 1.6`.
+
+- Task inspector now labels ED2K tasks as `ED2K` instead of the internal HTTP transport type.

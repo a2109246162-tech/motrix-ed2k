@@ -313,7 +313,11 @@ export function OverviewTab({
         <Card title={t('panel.downloads.inspector.overview.general')}>
           <Row
             label={t('panel.downloads.inspector.overview.type')}
-            value={task.type.toUpperCase()}
+            value={
+              task.uris.some((uri) => uri.startsWith('ed2k://'))
+                ? 'ED2K'
+                : task.type.toUpperCase()
+            }
           />
           {task.infoHash && (
             <Row
