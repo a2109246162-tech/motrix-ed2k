@@ -37,3 +37,9 @@
 - 新增 `ed2k-engine/source-lookup.py`，查询历史 eD2k 可用源并输出对应 `ip:port` 服务器。
 - 把之前 hash 对应的 `eMule Sunrise`、`Astra-3`、`MO-ad-free` 加入包装脚本。
 - 因 UPnP 返回 501，包装脚本关闭 UPnP；文档说明需在路由器手动转发端口。
+
+## 每任务分享
+
+- 新增 `src/core/task/ed2k-sharing.ts`：每任务比例存储，以及每 10 秒读取 aria2-next `uploadLength` 的监控器。
+- 新增 `command:setEd2kShareRatio` IPC 命令，并在 ED2K 任务右键菜单加入 **ED2K 分享比例** 子菜单。
+- 可选：不限、0（完成后停止上传）、1、1.5、2、3、5。达到目标后移除引擎任务，文件保留。

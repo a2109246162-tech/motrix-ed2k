@@ -37,3 +37,9 @@ Base: upstream Motrix v2.4.2 (`c601dcf`), with the macOS 12 compatibility patche
 - Added `ed2k-engine/source-lookup.py` to query historical eD2k availability and print matching `ip:port` servers.
 - Added servers reported for the previously supplied hash (`eMule Sunrise`, `Astra-3`, `MO-ad-free`) to the wrapper.
 - Disabled UPnP in the wrapper because it returns error 501; manual router forwarding is documented.
+
+## Per-task sharing
+
+- Added `src/core/task/ed2k-sharing.ts`: per-task ratio store and a 10-second monitor using aria2-next `uploadLength`.
+- Added `command:setEd2kShareRatio` IPC command and a right-click **ED2K 分享比例** submenu on ED2K tasks.
+- Options: unlimited, 0 (stop upload after completion), 1, 1.5, 2, 3, 5. Reaching the target removes the engine task and keeps the file.

@@ -45,3 +45,9 @@ Run the 64 ED2K tests, tsc --noEmit and Biome. Confirm in the UI that an ED2K li
 ```text
 If speed is 0, do not assume a code bug. Check `aria2.tellActive` ed2k.peerCount and debug logs for LowID / port mapping errors. Run source-lookup.py with the link, add the reported servers, and document that Xunlei-like centralized acceleration cannot be reproduced with open eD2k.
 ```
+
+## Prompt 7 — Sharing ratio
+
+```text
+Implement per-task ED2K sharing using the macOS source as reference. Right-click menu options: unlimited, 0, 1, 1.5, 2, 3, 5. Poll uploadLength every 10 seconds and remove the engine task at the target ratio without deleting files. Do not claim this reproduces Xunlei's CDN acceleration.
+```

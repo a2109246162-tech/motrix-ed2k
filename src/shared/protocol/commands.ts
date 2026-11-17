@@ -129,6 +129,7 @@ export const Commands = {
   RetryTrackerSources: 'command:retryTrackerSources',
   SyncTaskBtTracker: 'command:syncTaskBtTracker',
   SetTaskBtTracker: 'command:setTaskBtTracker',
+  SetEd2kShareRatio: 'command:setEd2kShareRatio',
   // Window
   PickSaveDir: 'command:pickSaveDir',
   CreateServerDirectory: 'command:createServerDirectory',

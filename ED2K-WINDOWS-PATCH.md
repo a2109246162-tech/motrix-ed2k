@@ -77,3 +77,7 @@ If patching a built app rather than rebuilding from source, edit the compiled bu
 - Add `--ed2k-port-mapping=false` when UPnP is known to fail.
 - Use `source-lookup.py <link> --servers` to add servers that historically indexed the hash.
 - This cannot reproduce Xunlei's central index/offline cache. If live peers are zero, speed is zero in any open eD2k client.
+
+## 8. Per-task sharing ratio
+
+Port `src/core/task/ed2k-sharing.ts`, `command:setEd2kShareRatio` and the right-click submenu. The Windows build must persist ratios and poll `aria2.tellStatus(gid, ["uploadLength"])`. Reaching the target calls `aria2.remove(gid)`; it must not delete downloaded files.

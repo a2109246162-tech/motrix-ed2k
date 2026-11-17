@@ -74,3 +74,7 @@ Motrix 默认传 `--min-split-size=4194304`（4M），ED2K 下分块偏大。包
 - 确认 UPnP 无效时加入 `--ed2k-port-mapping=false`。
 - 用 `source-lookup.py <链接> --servers` 找出历史上索引过该 hash 的服务器并加入列表。
 - 这无法复刻迅雷的中心化索引与离线缓存；若实时源为 0，任何开源 eD2k 客户端速度都是 0。
+
+## 8. 每任务分享比例
+
+移植 `src/core/task/ed2k-sharing.ts`、`command:setEd2kShareRatio` 和右键子菜单。Windows 版需要持久化比例并轮询 `aria2.tellStatus(gid, ["uploadLength"])`；达标后调用 `aria2.remove(gid)`，不要删除已下载文件。

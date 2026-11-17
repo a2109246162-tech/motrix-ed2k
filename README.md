@@ -67,3 +67,11 @@ Xunlei uses its own central index and offline/cache servers. A pure eD2k client 
 - `ed2k.shortypower.org` showed only 4 historical sources on 3 servers.
 
 Use `ed2k-engine/source-lookup.py 'ed2k://...' --servers` to query historical availability and get the matching server list. Add those servers to the wrapper. Manually forwarding TCP 4662 / UDP 4672 on the router is required to become HighID; without it, inbound peers remain blocked.
+
+## Per-task ED2K sharing ratio
+
+Right-click an ED2K task in the Downloads list and choose **ED2K 分享比例**. Options: unlimited, no sharing (stop upload after completion), 1:1, 1.5:1, 2:1, 3:1 and 5:1. The app stores the choice in `ed2k-sharing.json` under the Motrix user-data directory and checks every 10 seconds using `uploadLength` from aria2-next. When the ratio is reached, the engine task is removed while the downloaded file remains.
+
+This implements "download as much as you give back" per task. eD2k already has a credit system, but aria2-next does not expose a per-task eD2k ratio option, so the fork enforces it at the application layer.
+
+Speed note: Xunlei's 10–20 MB/s comes from its central cache and CDN, not from public eD2k. Open eD2k speed depends on live sources and upload bandwidth. This fork cannot create sources that do not exist.

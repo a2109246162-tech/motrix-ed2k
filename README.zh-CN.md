@@ -67,3 +67,11 @@ Motrix 源码与我们的补丁：MIT License（见 `LICENSE`、`ATTRIBUTION.md`
 - `ed2k.shortypower.org` 只显示 3 台服务器上的 4 个历史源。
 
 可用 `ed2k-engine/source-lookup.py 'ed2k://...' --servers` 查询历史可用性和对应服务器，并把结果加入包装脚本。要在路由器手动转发 TCP 4662 / UDP 4672 才能变成 HighID；否则入站连接始终受限。
+
+## 每任务 ED2K 分享比例
+
+在下载列表右键 ED2K 任务，选择 **ED2K 分享比例**：不限、不分享（完成后停止上传）、1:1、1.5:1、2:1、3:1、5:1。选择会写入 Motrix 用户数据目录下的 `ed2k-sharing.json`，应用每 10 秒读取 aria2-next 的 `uploadLength` 进行判断；达到比例后移除引擎任务，已下载文件保留。
+
+这就是"下载多少、贡献多少"的每任务实现。eD2k 本身有 credits，但 aria2-next 没有暴露每任务 eD2k 比例选项，所以本分支在应用层强制执行。
+
+速度说明：迅雷的十几二十 MB/s 来自中心缓存和 CDN，不是公开 eD2k 网络。开源 eD2k 的速度取决于实时在线源和对方上传带宽；本分支无法凭空制造不存在的源。

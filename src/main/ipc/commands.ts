@@ -83,6 +83,11 @@ import {
   handleCreateTask,
 } from '@core/task/create-task-handler'
 import { DirectResourceValidatorService } from '@core/task/direct-resource-validator'
+import {
+  type Ed2kShareRatio,
+  setEd2kShareRatio,
+  startEd2kSharingMonitor,
+} from '@core/task/ed2k-sharing'
 import type { FileCleanupService } from '@core/task/file-cleanup-service'
 import type { FinalNamePicker } from '@core/task/final-name-picker'
 import type { MediaMetaStore } from '@core/task/media-meta-store'
@@ -367,6 +372,8 @@ export function buildCommandHandlers(ctx: CommandContext): CommandHandlerMap {
     publishTaskUpdate,
     publishTaskUpdateNow,
   } = ctx
+
+  startEd2kSharingMonitor({ adapter, taskManager, userDataDir })
 
   const createDeps: CreateTaskDeps = {
     adapter,
@@ -1698,6 +1705,32 @@ export function buildCommandHandlers(ctx: CommandContext): CommandHandlerMap {
       const task = taskManager.getByEngineTaskId(engineGid)
       if (!task || task.id !== taskId) throw new Error('Tracker task changed')
       await trackerManager.setBtTracker(taskId, engineGid, trackers)
+    },
+
+    [Commands.SetEd2kShareRatio]: async (raw: unknown) => {
+      const payload = z
+        .object({
+          taskId: z.string().min(1),
+          engineGid: z.string().min(1),
+          ratio: z
+            .number()
+            .refine((value) =>
+              ([-1, 0, 1, 1.5, 2, 3, 5] as number[]).includes(value)
+            ),
+        })
+        .parse(raw)
+      const task = taskManager.getByEngineTaskId(payload.engineGid)
+      if (!task || task.id !== payload.taskId)
+        throw new Error('ED2K task changed')
+      if (!task.uris.some((uri) => uri.startsWith('ed2k://')))
+        throw new Error('Task is not an ED2K download')
+      setEd2kShareRatio(
+        { adapter, taskManager, userDataDir },
+        payload.taskId,
+        payload.engineGid,
+        payload.ratio as Ed2kShareRatio
+      )
+      return { ok: true }
     },
 
     [Commands.SyncTaskBtTracker]: async (params: { engineGid: string }) => {

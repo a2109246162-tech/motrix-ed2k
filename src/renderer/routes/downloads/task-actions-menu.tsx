@@ -413,6 +413,47 @@ export function TaskActionsMenu({
               {t('panel.downloads.action.chooseFiles')}
             </DropdownMenuItem>
           )}
+          {single && single.uris.some((uri) => uri.startsWith('ed2k://')) && (
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>ED2K 分享比例</DropdownMenuSubTrigger>
+              <DropdownMenuSubContent
+                data-menu-density="compact"
+                className="w-max min-w-56 max-w-[min(22rem,var(--available-width))]"
+              >
+                {(
+                  [
+                    [-1, '不限（一直做种）'],
+                    [0, '不分享（完成后停止上传）'],
+                    [1, '1:1（下载多少，贡献多少）'],
+                    [1.5, '1.5:1'],
+                    [2, '2:1'],
+                    [3, '3:1'],
+                    [5, '5:1'],
+                  ] as const
+                ).map(([ratio, label]) => (
+                  <DropdownMenuItem
+                    key={ratio}
+                    disabled={pending}
+                    onClick={() =>
+                      void runAction(async () => {
+                        await transport.invoke(Commands.SetEd2kShareRatio, {
+                          taskId: single.id,
+                          engineGid: single.engineTaskId,
+                          ratio,
+                        })
+                        toast.add({
+                          title: `ED2K 分享比例：${label}`,
+                          type: 'success',
+                        })
+                      }, t('common.error'))
+                    }
+                  >
+                    {label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          )}
           {actions.moveCount > 0 && (
             <DropdownMenuSub>
               <DropdownMenuSubTrigger disabled={actions.moving}>
