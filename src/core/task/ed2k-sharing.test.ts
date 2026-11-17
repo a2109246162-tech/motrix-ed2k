@@ -24,7 +24,8 @@ function makeDeps(): Ed2kSharingDeps & {
       getUploadLength: vi.fn().mockResolvedValue(0),
       removeTask: vi.fn().mockResolvedValue(undefined),
     },
-    taskManager: { getByEngineTaskId: () => undefined },
+    taskManager: { getAll: () => [], getByEngineTaskId: () => undefined },
+    settings: { get: () => ({ engine: { ed2kShareBandwidth: true } }) },
   }
 }
 
@@ -42,7 +43,7 @@ describe('ED2K sharing ratio store', () => {
 
   it('rejects unsupported ratios', () => {
     const deps = makeDeps()
-    expect(() => setEd2kShareRatio(deps, 'task-1', 'gid-1', 4 as 1)).toThrow(
+    expect(() => setEd2kShareRatio(deps, 'task-1', 'gid-1', 11)).toThrow(
       'Invalid ED2K share ratio'
     )
   })

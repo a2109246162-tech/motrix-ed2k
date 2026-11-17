@@ -205,6 +205,8 @@ export interface EngineSettings {
   btEnableLpd: boolean
   seedRatio: number
   seedTime: number
+  /** Reciprocal ED2K sharing switch; default on. */
+  ed2kShareBandwidth: boolean
 
   // Disk & session
   fileAllocation: FileAllocation

@@ -75,3 +75,10 @@ Right-click an ED2K task in the Downloads list and choose **ED2K 分享比例**.
 This implements "download as much as you give back" per task. eD2k already has a credit system, but aria2-next does not expose a per-task eD2k ratio option, so the fork enforces it at the application layer.
 
 Speed note: Xunlei's 10–20 MB/s comes from its central cache and CDN, not from public eD2k. Open eD2k speed depends on live sources and upload bandwidth. This fork cannot create sources that do not exist.
+
+## Sharing settings update (final)
+
+- Settings → BitTorrent → **ED2K 分享** contains **为 ED2K 资源提供带宽** (on by default). When off, every ED2K task stops uploading after completion.
+- Right-click an ED2K task → **ED2K 分享比例** shows a slider from 0 to 10. Left = 0 (stop upload after completion); right = 10x the file size. Presets: 0.5 (default), 1, 2, 10 and unlimited.
+- The ratio is per task and applies continuously: a 1 GB file at 0.5 targets 0.5 GB uploaded; at 2 it targets 2 GB; at 10 it targets 10 GB.
+- Fixed the false **non-Motrix aria2** compatibility notification. aria2-next is now recognised as the supported ED2K engine, so connection options are no longer capped at 16.

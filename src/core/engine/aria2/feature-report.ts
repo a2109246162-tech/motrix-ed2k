@@ -17,9 +17,16 @@ export const STANDARD_ARIA2_CONNECTION_LIMIT = 16
  * Both markers are required: the version suffix establishes lineage and the
  * feature token confirms the fork-only persistence capability is present.
  */
+const SUPPORTED_ED2K_ENGINE = /aria2-next|motrix-ed2k/i
+
 export function isMotrixFork(
   report: Pick<EngineFeatureReport, 'version' | 'hasSqlitePersistence'>
 ): boolean {
+  // aria2-next is an intentional engine replacement for the ED2K edition.
+  // It is not the upstream aria2_motrix fork and has no SQLite persistence,
+  // but treating it as an unknown engine would cap every download to 16
+  // connections and show a misleading compatibility warning.
+  if (SUPPORTED_ED2K_ENGINE.test(report.version)) return true
   return MOTRIX_VERSION.test(report.version) && report.hasSqlitePersistence
 }
 

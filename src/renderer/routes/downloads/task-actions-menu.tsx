@@ -17,6 +17,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@renderer/components/ui/dropdown-menu'
+import { Slider } from '@renderer/components/ui/slider'
 import { toast } from '@renderer/components/ui/toast'
 import {
   menuActionEnabled,
@@ -135,6 +136,7 @@ export function TaskActionsMenu({
       onClose={() => setStorageDialog(null)}
     />
   ) : null
+  const [shareRatioDraft, setShareRatioDraft] = useState(0.5)
   const [menuOpen, setMenuOpen] = useState(false)
   const pendingRef = useRef(false)
   const [pending, setPending] = useState(false)
@@ -418,23 +420,62 @@ export function TaskActionsMenu({
               <DropdownMenuSubTrigger>ED2K 分享比例</DropdownMenuSubTrigger>
               <DropdownMenuSubContent
                 data-menu-density="compact"
-                className="w-max min-w-56 max-w-[min(22rem,var(--available-width))]"
+                className="w-72 max-w-[min(22rem,var(--available-width))] p-2"
               >
+                <div className="px-2 pb-2 text-xs text-muted-foreground">
+                  默认 0.5 倍；0 为完成后停止上传，最高 10 倍文件大小。
+                </div>
+                <div className="px-2 pb-1 text-xs">
+                  当前：{shareRatioDraft.toFixed(1)} 倍 · 约{' '}
+                  {((single.totalBytes * shareRatioDraft) / 1e9).toFixed(2)} GB
+                </div>
+                <div className="px-2 py-2">
+                  <Slider
+                    value={[shareRatioDraft]}
+                    min={0}
+                    max={10}
+                    step={0.1}
+                    onValueChange={(values) => {
+                      if (Array.isArray(values) && values.length === 1)
+                        setShareRatioDraft(values[0])
+                    }}
+                    getAriaLabel={() => 'ED2K 分享比例'}
+                    getAriaValueText={(_formatted, value) => `${value} 倍`}
+                  />
+                </div>
+                <DropdownMenuItem
+                  disabled={pending}
+                  onClick={() =>
+                    void runAction(async () => {
+                      await transport.invoke(Commands.SetEd2kShareRatio, {
+                        taskId: single.id,
+                        engineGid: single.engineTaskId,
+                        ratio: shareRatioDraft,
+                      })
+                      toast.add({
+                        title: `ED2K 分享量已设为 ${shareRatioDraft.toFixed(1)} 倍文件大小`,
+                        type: 'success',
+                      })
+                    }, t('common.error'))
+                  }
+                >
+                  应用当前比例
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 {(
                   [
+                    [0.5, '0.5 倍（默认）'],
+                    [1, '1 倍'],
+                    [2, '2 倍'],
+                    [10, '10 倍'],
                     [-1, '不限（一直做种）'],
-                    [0, '不分享（完成后停止上传）'],
-                    [1, '1:1（下载多少，贡献多少）'],
-                    [1.5, '1.5:1'],
-                    [2, '2:1'],
-                    [3, '3:1'],
-                    [5, '5:1'],
                   ] as const
                 ).map(([ratio, label]) => (
                   <DropdownMenuItem
                     key={ratio}
                     disabled={pending}
-                    onClick={() =>
+                    onClick={() => {
+                      if (ratio >= 0) setShareRatioDraft(ratio)
                       void runAction(async () => {
                         await transport.invoke(Commands.SetEd2kShareRatio, {
                           taskId: single.id,
@@ -442,11 +483,11 @@ export function TaskActionsMenu({
                           ratio,
                         })
                         toast.add({
-                          title: `ED2K 分享比例：${label}`,
+                          title: `ED2K 分享量：${label}`,
                           type: 'success',
                         })
                       }, t('common.error'))
-                    }
+                    }}
                   >
                     {label}
                   </DropdownMenuItem>

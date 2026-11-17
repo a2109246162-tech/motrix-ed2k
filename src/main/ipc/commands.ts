@@ -373,7 +373,12 @@ export function buildCommandHandlers(ctx: CommandContext): CommandHandlerMap {
     publishTaskUpdateNow,
   } = ctx
 
-  startEd2kSharingMonitor({ adapter, taskManager, userDataDir })
+  startEd2kSharingMonitor({
+    adapter,
+    taskManager,
+    settings: settingsManager,
+    userDataDir,
+  })
 
   const createDeps: CreateTaskDeps = {
     adapter,
@@ -1714,18 +1719,21 @@ export function buildCommandHandlers(ctx: CommandContext): CommandHandlerMap {
           engineGid: z.string().min(1),
           ratio: z
             .number()
-            .refine((value) =>
-              ([-1, 0, 1, 1.5, 2, 3, 5] as number[]).includes(value)
+            .refine(
+              (value) =>
+                value === -1 || value === 0 || (value > 0 && value <= 10)
             ),
         })
         .parse(raw)
+      if (settingsManager.get().engine.ed2kShareBandwidth === false)
+        throw new Error('请先在设置中开启“为 ED2K 资源提供带宽”')
       const task = taskManager.getByEngineTaskId(payload.engineGid)
       if (!task || task.id !== payload.taskId)
         throw new Error('ED2K task changed')
       if (!task.uris.some((uri) => uri.startsWith('ed2k://')))
         throw new Error('Task is not an ED2K download')
       setEd2kShareRatio(
-        { adapter, taskManager, userDataDir },
+        { adapter, taskManager, settings: settingsManager, userDataDir },
         payload.taskId,
         payload.engineGid,
         payload.ratio as Ed2kShareRatio

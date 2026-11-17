@@ -60,6 +60,7 @@ export const bitTorrentFormSchema = z.object({
     btEnableLpd: true,
     seedRatio: true,
     seedTime: true,
+    ed2kShareBandwidth: true,
   }),
   app: appSettingsInputSchema.pick({
     magnetFileSelection: true,

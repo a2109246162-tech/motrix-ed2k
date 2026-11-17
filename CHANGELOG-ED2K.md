@@ -43,3 +43,10 @@ Base: upstream Motrix v2.4.2 (`c601dcf`), with the macOS 12 compatibility patche
 - Added `src/core/task/ed2k-sharing.ts`: per-task ratio store and a 10-second monitor using aria2-next `uploadLength`.
 - Added `command:setEd2kShareRatio` IPC command and a right-click **ED2K 分享比例** submenu on ED2K tasks.
 - Options: unlimited, 0 (stop upload after completion), 1, 1.5, 2, 3, 5. Reaching the target removes the engine task and keeps the file.
+
+## Final sharing UX and engine identity
+
+- Added `engine.ed2kShareBandwidth` setting (default true) and a switch in Settings.
+- Per-task slider 0–10 (0.1 step) with presets 0.5/1/2/10/unlimited; default 0.5.
+- Monitor applies the global switch, then the per-task ratio, to every ED2K task.
+- Recognised `aria2-next` / `3.1.0-motrix-ed2k` as a supported engine, removing the false non-Motrix aria2 warning and the 16-connection cap.

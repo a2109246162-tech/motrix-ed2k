@@ -78,3 +78,10 @@ Motrix 默认传 `--min-split-size=4194304`（4M），ED2K 下分块偏大。包
 ## 8. 每任务分享比例
 
 移植 `src/core/task/ed2k-sharing.ts`、`command:setEd2kShareRatio` 和右键子菜单。Windows 版需要持久化比例并轮询 `aria2.tellStatus(gid, ["uploadLength"])`；达标后调用 `aria2.remove(gid)`，不要删除已下载文件。
+
+## 9. 分享交互最终版
+
+- 新增 `engine.ed2kShareBandwidth` 布尔设置，默认 true。
+- 右键滑轨范围 0–10，步长 0.1；最左 0 表示完成即停传，最右 10 表示文件大小的 10 倍。
+- 默认比例 0.5；预设 0.5/1/2/10/不限。
+- 将 `aria2-next` 识别为受支持引擎，避免非 Motrix 提示和 16 连接上限。

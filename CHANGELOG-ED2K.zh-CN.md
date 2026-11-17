@@ -43,3 +43,10 @@
 - 新增 `src/core/task/ed2k-sharing.ts`：每任务比例存储，以及每 10 秒读取 aria2-next `uploadLength` 的监控器。
 - 新增 `command:setEd2kShareRatio` IPC 命令，并在 ED2K 任务右键菜单加入 **ED2K 分享比例** 子菜单。
 - 可选：不限、0（完成后停止上传）、1、1.5、2、3、5。达到目标后移除引擎任务，文件保留。
+
+## 分享交互与引擎识别最终版
+
+- 新增 `engine.ed2kShareBandwidth` 设置（默认开启）和设置页开关。
+- 每任务滑轨 0–10（步长 0.1），预设 0.5/1/2/10/不限；默认 0.5。
+- 监控器先判断总开关，再按每任务比例作用于所有 ED2K 任务。
+- 识别 `aria2-next` / `3.1.0-motrix-ed2k` 为受支持引擎，消除误报的非 Motrix aria2 提示和 16 连接上限。

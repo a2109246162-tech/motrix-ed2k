@@ -2,7 +2,7 @@
 DIR="$(cd "$(dirname "$0")" && pwd)"
 for arg in "$@"; do
   if [ "$arg" = "--version" ] || [ "$arg" = "-v" ]; then
-    echo "aria2 version 3.1.0-motrix-ed2k"
+    printf "%s\n%s\n" "aria2 version 3.1.0-motrix-ed2k" "Enabled Features: Async DNS, BitTorrent, Metalink"
     exit 0
   fi
 done

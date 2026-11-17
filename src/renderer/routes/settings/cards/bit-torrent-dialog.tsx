@@ -65,6 +65,7 @@ const DEFAULTS: BtFields = {
     btEnableLpd: DEFAULT_ENGINE_SETTINGS.btEnableLpd,
     seedRatio: DEFAULT_ENGINE_SETTINGS.seedRatio,
     seedTime: DEFAULT_ENGINE_SETTINGS.seedTime,
+    ed2kShareBandwidth: DEFAULT_ENGINE_SETTINGS.ed2kShareBandwidth,
   },
   app: {
     magnetFileSelection: DEFAULT_APP_SETTINGS.magnetFileSelection,
@@ -111,6 +112,9 @@ export function BitTorrentDialog({
           btEnableLpd: all.engine.btEnableLpd,
           seedRatio: all.engine.seedRatio,
           seedTime: all.engine.seedTime,
+          ed2kShareBandwidth:
+            all.engine.ed2kShareBandwidth ??
+            DEFAULT_ENGINE_SETTINGS.ed2kShareBandwidth,
         },
         app: {
           magnetFileSelection: all.app.magnetFileSelection,
@@ -381,6 +385,32 @@ export function BitTorrentDialog({
                               onChange={(event) =>
                                 field.onChange(event.target.valueAsNumber)
                               }
+                            />
+                          </FormControl>
+                        </SettingsFormRow>
+                      )}
+                    />
+                    <Separator className="my-4" />
+                    {/* ED2K reciprocal sharing */}
+                    <h3 className="text-sm font-semibold text-foreground">
+                      ED2K 分享
+                    </h3>
+                    <FormField
+                      control={form.control}
+                      name="engine.ed2kShareBandwidth"
+                      render={({ field }) => (
+                        <SettingsFormRow>
+                          <div className="space-y-1">
+                            <FormLabel>为 ED2K 资源提供带宽</FormLabel>
+                            <FormDescription className="text-xs">
+                              开启后按每任务比例回传流量；关闭后 ED2K
+                              任务下载完即停止上传。
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
                             />
                           </FormControl>
                         </SettingsFormRow>

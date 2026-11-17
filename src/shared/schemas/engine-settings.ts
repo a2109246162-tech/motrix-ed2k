@@ -64,6 +64,9 @@ const persistedEngineSettingsSchema = z.object({
   seedRatio: z.number().min(0).max(100).catch(1),
   seedTime: z.number().int().min(0).max(525600).catch(60),
 
+  // ED2K sharing (reciprocal P2P)
+  ed2kShareBandwidth: z.boolean().catch(true),
+
   // Disk & session
   fileAllocation: z.enum(['none', 'prealloc', 'trunc', 'falloc']).catch('none'),
   remoteTime: z.boolean().catch(false),

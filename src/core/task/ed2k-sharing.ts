@@ -2,7 +2,10 @@ import fs from 'node:fs'
 import path from 'node:path'
 import type { DownloadTask } from '@shared/types/task'
 
-export type Ed2kShareRatio = -1 | 0 | 1 | 1.5 | 2 | 3 | 5
+/** 50% of downloaded bytes is shared back unless the user chooses otherwise. */
+export const DEFAULT_ED2K_SHARE_RATIO = 0.5
+
+export type Ed2kShareRatio = number
 
 interface SharingEntry {
   taskId: string
@@ -17,15 +20,27 @@ export interface Ed2kSharingDeps {
     removeTask(engineTaskId: string): Promise<void>
   }
   taskManager: {
+    getAll(): readonly DownloadTask[]
     getByEngineTaskId(engineTaskId: string): DownloadTask | undefined
+  }
+  settings: {
+    get(): { engine: { ed2kShareBandwidth?: boolean } }
   }
 }
 
-const VALID_RATIOS: readonly Ed2kShareRatio[] = [-1, 0, 1, 1.5, 2, 3, 5]
+const PRESET_RATIOS: readonly number[] = [-1, 0, 0.5, 1, 1.5, 2, 3, 5, 10]
 let monitorTimer: NodeJS.Timeout | undefined
 
 function configPath(userDataDir: string) {
   return path.join(userDataDir, 'ed2k-sharing.json')
+}
+
+function isValidRatio(ratio: unknown): ratio is number {
+  return (
+    typeof ratio === 'number' &&
+    Number.isFinite(ratio) &&
+    (ratio === -1 || ratio === 0 || (ratio > 0 && ratio <= 10))
+  )
 }
 
 function readEntries(userDataDir: string): SharingEntry[] {
@@ -40,7 +55,7 @@ function readEntries(userDataDir: string): SharingEntry[] {
         entry !== null &&
         typeof (entry as SharingEntry).taskId === 'string' &&
         typeof (entry as SharingEntry).engineGid === 'string' &&
-        VALID_RATIOS.includes((entry as SharingEntry).ratio)
+        isValidRatio((entry as SharingEntry).ratio)
     )
   } catch {
     return []
@@ -62,7 +77,7 @@ export function setEd2kShareRatio(
   engineGid: string,
   ratio: Ed2kShareRatio
 ) {
-  if (!VALID_RATIOS.includes(ratio)) throw new Error('Invalid ED2K share ratio')
+  if (!isValidRatio(ratio)) throw new Error('Invalid ED2K share ratio')
   const entries = readEntries(deps.userDataDir).filter(
     (entry) => entry.taskId !== taskId
   )
@@ -73,20 +88,47 @@ export function setEd2kShareRatio(
 export function getEd2kShareRatio(
   userDataDir: string,
   taskId: string
-): Ed2kShareRatio | undefined {
-  return readEntries(userDataDir).find((entry) => entry.taskId === taskId)
-    ?.ratio
+): Ed2kShareRatio {
+  return (
+    readEntries(userDataDir).find((entry) => entry.taskId === taskId)?.ratio ??
+    DEFAULT_ED2K_SHARE_RATIO
+  )
+}
+
+export function getEd2kPresetRatios(): readonly number[] {
+  return PRESET_RATIOS
 }
 
 export function startEd2kSharingMonitor(deps: Ed2kSharingDeps) {
   if (monitorTimer) return
   const tick = async () => {
-    const entries = readEntries(deps.userDataDir)
-    if (entries.length === 0) return
-    const remaining: SharingEntry[] = []
-    for (const entry of entries) {
-      if (entry.ratio === -1) {
-        remaining.push(entry)
+    const sharingEnabled =
+      deps.settings.get().engine.ed2kShareBandwidth !== false
+    const overrides = readEntries(deps.userDataDir)
+    const overrideIds = new Set(overrides.map((entry) => entry.taskId))
+    const candidates: SharingEntry[] = [...overrides]
+
+    // Tasks without an explicit choice use the 50% default. This makes the
+    // policy apply to every ED2K download, not only menu-customised ones.
+    for (const task of deps.taskManager.getAll()) {
+      if (overrideIds.has(task.id)) continue
+      if (!task.uris.some((uri) => uri.startsWith('ed2k://'))) continue
+      if (!task.engineTaskId) continue
+      candidates.push({
+        taskId: task.id,
+        engineGid: task.engineTaskId,
+        ratio: DEFAULT_ED2K_SHARE_RATIO,
+      })
+    }
+
+    const remainingOverrides: SharingEntry[] = []
+    for (const entry of candidates) {
+      const isOverride = overrideIds.has(entry.taskId)
+      // The global switch overrides every per-task choice: when it is off,
+      // sharing is 0 for all ED2K tasks.
+      const effectiveRatio = sharingEnabled ? entry.ratio : 0
+      if (effectiveRatio === -1) {
+        if (isOverride) remainingOverrides.push(entry)
         continue
       }
       const task = deps.taskManager.getByEngineTaskId(entry.engineGid)
@@ -94,10 +136,11 @@ export function startEd2kSharingMonitor(deps: Ed2kSharingDeps) {
         !task ||
         task.id !== entry.taskId ||
         !task.uris.some((uri) => uri.startsWith('ed2k://'))
-      )
+      ) {
         continue
-      if (entry.ratio === 0 && task.status !== 'completed') {
-        remaining.push(entry)
+      }
+      if (effectiveRatio === 0 && task.status !== 'completed') {
+        if (isOverride) remainingOverrides.push(entry)
         continue
       }
       try {
@@ -107,19 +150,19 @@ export function startEd2kSharingMonitor(deps: Ed2kSharingDeps) {
         )
         const uploaded = await deps.adapter.getUploadLength(entry.engineGid)
         const reached =
-          entry.ratio === 0 ||
-          (downloaded > 0 && uploaded >= downloaded * entry.ratio)
+          effectiveRatio === 0 ||
+          (downloaded > 0 && uploaded >= downloaded * effectiveRatio)
         if (reached) {
           await deps.adapter.removeTask(entry.engineGid)
           continue
         }
       } catch {
-        // Keep the entry for the next tick; a transient RPC failure must not
-        // silently disable a user's sharing policy.
+        // Keep the override for the next tick; a transient RPC failure must
+        // not silently disable a user's sharing policy.
       }
-      remaining.push(entry)
+      if (isOverride) remainingOverrides.push(entry)
     }
-    writeEntries(deps.userDataDir, remaining)
+    writeEntries(deps.userDataDir, remainingOverrides)
   }
   monitorTimer = setInterval(() => {
     void tick()

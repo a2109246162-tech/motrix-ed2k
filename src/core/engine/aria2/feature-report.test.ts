@@ -62,6 +62,12 @@ describe('isMotrixFork', () => {
     ).toBe(false)
     expect(isMotrixFork(buildFeatureReport('1.37.0-motrix.10', []))).toBe(false)
   })
+
+  it('recognizes the supported aria2-next ED2K engine', () => {
+    expect(
+      isMotrixFork(buildFeatureReport('3.1.0-motrix-ed2k', ['BitTorrent']))
+    ).toBe(true)
+  })
 })
 
 describe('hasDurableRemoveSemantics', () => {
