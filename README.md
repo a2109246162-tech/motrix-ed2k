@@ -140,7 +140,7 @@ The fork does not reimplement eD2k. It removes Motrix's protocol whitelist block
 
 ## Verification
 
-- 35 ED2K-focused tests pass.
+- 36 ED2K-focused tests pass.
 - `tsc --noEmit` passes.
 - Biome check passes on changed files.
 - On macOS 12.7.6 the app launches, aria2-next starts with server and Kad lists, and the ED2K task is accepted with full `ed2k` metadata.
