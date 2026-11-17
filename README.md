@@ -82,3 +82,9 @@ Speed note: Xunlei's 10–20 MB/s comes from its central cache and CDN, not from
 - Right-click an ED2K task → **ED2K 分享比例** shows a slider from 0 to 10. Left = 0 (stop upload after completion); right = 10x the file size. Presets: 0.5 (default), 1, 2, 10 and unlimited.
 - The ratio is per task and applies continuously: a 1 GB file at 0.5 targets 0.5 GB uploaded; at 2 it targets 2 GB; at 10 it targets 10 GB.
 - Fixed the false **non-Motrix aria2** compatibility notification. aria2-next is now recognised as the supported ED2K engine, so connection options are no longer capped at 16.
+
+## Speed diagnosis
+
+Run `python3 ed2k-engine/diagnose.py` while the app is running. It prints the live RPC view: connected servers, LowID, Kad nodes, port mapping, and per-task peer counts.
+
+Measured on this machine: `lowId=true`, `kadFirewalled=true`, `portMapping=off`, only 1 connected server and 0 peers for the paused task. That is a network/source condition, not a connection-cap bug. To improve it, forward TCP 4662 and UDP 4672 to the Mac's LAN address (192.168.1.7 here) on the router; UPnP failed with error 501 on this router. A paused task must also be resumed before any speed can appear.

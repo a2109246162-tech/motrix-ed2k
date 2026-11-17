@@ -50,3 +50,8 @@ Base: upstream Motrix v2.4.2 (`c601dcf`), with the macOS 12 compatibility patche
 - Per-task slider 0–10 (0.1 step) with presets 0.5/1/2/10/unlimited; default 0.5.
 - Monitor applies the global switch, then the per-task ratio, to every ED2K task.
 - Recognised `aria2-next` / `3.1.0-motrix-ed2k` as a supported engine, removing the false non-Motrix aria2 warning and the 16-connection cap.
+
+## Speed diagnostics
+
+- Added `ed2k-engine/diagnose.py` for live RPC inspection of LowID, server/Kad counts, port mapping and per-task peer counts.
+- Documented the measured state: LowID, Kad firewalled, UPnP off, one connected server, zero peers for the paused task.
