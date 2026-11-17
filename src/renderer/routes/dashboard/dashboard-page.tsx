@@ -4,6 +4,7 @@ import { requestEngineDiagnostics } from '@renderer/features/engine-diagnostics/
 import { useGlobalSpeedHistory } from '@renderer/hooks/use-global-speed-history'
 import { useGlobalStats } from '@renderer/hooks/use-global-stats'
 import { useSpeedLimitState } from '@renderer/hooks/use-speed-limit-state'
+import { useTaskList } from '@renderer/hooks/use-task-list'
 import { useTransferStats } from '@renderer/hooks/use-transfer-stats'
 import { saveSettings } from '@renderer/lib/settings-save'
 import { transport } from '@renderer/lib/transport'
@@ -16,10 +17,17 @@ import type {
   DashboardLayoutSettings,
   DashboardTileLayout,
 } from '@shared/types/settings'
-import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { DashboardGrid } from './components/dashboard-grid'
 import { TileErrorBoundary } from './components/tile-error-boundary'
+import { Ed2kContributionDialog } from './ed2k-contribution-dialog'
 import { useEngineDisplayStatus } from './hooks/use-engine-display-status'
 import type { DashboardTileViewport } from './layout/dashboard-registry'
 import { ActiveTile } from './tiles/active-tile'
@@ -43,12 +51,26 @@ export function DashboardPage() {
   const history = useGlobalSpeedHistory()
   const { stats } = useGlobalStats()
   const transfer = useTransferStats()
+  const taskList = useTaskList()
+  const ed2kUploadBytes = useMemo(() => {
+    let total = 0n
+    for (const task of taskList.tasks) {
+      if (!task.uris.some((uri) => uri.startsWith('ed2k://'))) continue
+      try {
+        total += BigInt(task.uploadedBytes)
+      } catch {
+        // Ignore a malformed counter; the rest of the dashboard stays usable.
+      }
+    }
+    return total.toString()
+  }, [taskList.tasks])
   const engineStatus = useEngineDisplayStatus()
   const speedLimit = useSpeedLimitState()
   const [layout, setLayout] = useState<DashboardLayoutSettings>(
     () => cachedLayout ?? DEFAULT_DASHBOARD_LAYOUT
   )
   const [dashboardActions, setDashboardActions] = useState<ReactNode>(null)
+  const [contributionOpen, setContributionOpen] = useState(false)
 
   const engineOnline =
     engineStatus.state !== 'disconnected' && engineStatus.state !== 'failed'
@@ -131,7 +153,12 @@ export function DashboardPage() {
         case 'transfer':
           return (
             <TileErrorBoundary tile="Transfer" className="h-full min-h-0">
-              <TransferTile state={transfer} viewport={viewport} />
+              <TransferTile
+                state={transfer}
+                viewport={viewport}
+                ed2kUploadBytes={ed2kUploadBytes}
+                onOpenContribution={() => setContributionOpen(true)}
+              />
             </TileErrorBoundary>
           )
         case 'speedLimit':
@@ -172,6 +199,7 @@ export function DashboardPage() {
       speedLimit,
       stats?.activeTasks,
       transfer,
+      ed2kUploadBytes,
     ]
   )
 
@@ -188,6 +216,10 @@ export function DashboardPage() {
         renderTile={renderTile}
         onApply={saveLayout}
         onActionsChange={setDashboardActions}
+      />
+      <Ed2kContributionDialog
+        open={contributionOpen}
+        onOpenChange={setContributionOpen}
       />
     </PanelShell>
   )

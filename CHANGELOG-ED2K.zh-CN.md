@@ -55,3 +55,9 @@
 
 - 新增 `ed2k-engine/diagnose.py`，通过 RPC 实时查看 LowID、服务器/Kad 数量、端口映射和每任务 peer 数。
 - 文档记录了本机实测：LowID、Kad 被防火墙隔离、UPnP 关闭、仅连 1 台服务器、暂停任务 0 个 peer。
+
+## 仪表盘贡献
+
+- 分享监控器新增 `ed2k-contribution.json`：按天、按任务记录上传增量，保留 90 天。
+- 新增 `query:getEd2kContribution` 和明细弹窗，从传输卡片点击进入。
+- 传输卡片现在始终显示 **ED2K 已贡献**，总流量为 0 时也显示。

@@ -99,6 +99,106 @@ export function getEd2kPresetRatios(): readonly number[] {
   return PRESET_RATIOS
 }
 
+interface ContributionData {
+  last: Record<string, string>
+  days: Record<string, Record<string, { name: string; bytes: string }>>
+}
+
+export interface Ed2kContributionSnapshot {
+  totalBytes: string
+  days: Array<{
+    date: string
+    bytes: string
+    tasks: Array<{ name: string; bytes: string }>
+  }>
+}
+
+function contributionPath(userDataDir: string) {
+  return path.join(userDataDir, 'ed2k-contribution.json')
+}
+
+function readContribution(userDataDir: string): ContributionData {
+  try {
+    const parsed = JSON.parse(
+      fs.readFileSync(contributionPath(userDataDir), 'utf8')
+    ) as Partial<ContributionData>
+    return {
+      last: parsed.last ?? {},
+      days: parsed.days ?? {},
+    }
+  } catch {
+    return { last: {}, days: {} }
+  }
+}
+
+function writeContribution(userDataDir: string, data: ContributionData) {
+  fs.mkdirSync(userDataDir, { recursive: true })
+  fs.writeFileSync(
+    contributionPath(userDataDir),
+    `${JSON.stringify(data, null, 2)}\n`,
+    'utf8'
+  )
+}
+
+function dayKey(now = new Date()): string {
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000)
+  return local.toISOString().slice(0, 10)
+}
+
+function recordContribution(
+  userDataDir: string,
+  task: DownloadTask,
+  uploaded: number
+) {
+  if (!Number.isFinite(uploaded) || uploaded <= 0) return
+  const data = readContribution(userDataDir)
+  const previous = Number.parseInt(data.last[task.id] ?? '0', 10)
+  const delta = uploaded >= previous ? uploaded - previous : uploaded
+  if (delta <= 0) return
+  const date = dayKey()
+  const day = data.days[date] ?? {}
+  const current = day[task.id] ?? { name: task.name, bytes: '0' }
+  current.name = task.name
+  current.bytes = (BigInt(current.bytes) + BigInt(delta)).toString()
+  day[task.id] = current
+  data.days[date] = day
+  data.last[task.id] = String(uploaded)
+
+  const cutoff = new Date()
+  cutoff.setDate(cutoff.getDate() - 90)
+  const oldest = dayKey(cutoff)
+  for (const key of Object.keys(data.days)) {
+    if (key < oldest) delete data.days[key]
+  }
+  writeContribution(userDataDir, data)
+}
+
+export function getEd2kContribution(
+  userDataDir: string
+): Ed2kContributionSnapshot {
+  const data = readContribution(userDataDir)
+  let total = 0n
+  const days = Object.entries(data.days)
+    .sort(([left], [right]) => right.localeCompare(left))
+    .map(([date, tasks]) => {
+      let bytes = 0n
+      const entries = Object.values(tasks).map((task) => {
+        const value = BigInt(task.bytes)
+        bytes += value
+        return { name: task.name, bytes: value.toString() }
+      })
+      total += bytes
+      return {
+        date,
+        bytes: bytes.toString(),
+        tasks: entries.sort((a, b) =>
+          Number(BigInt(b.bytes) - BigInt(a.bytes))
+        ),
+      }
+    })
+  return { totalBytes: total.toString(), days }
+}
+
 export function startEd2kSharingMonitor(deps: Ed2kSharingDeps) {
   if (monitorTimer) return
   const tick = async () => {
@@ -149,6 +249,7 @@ export function startEd2kSharingMonitor(deps: Ed2kSharingDeps) {
           Number(task.downloadedBytes) || Number(task.totalBytes) || 0
         )
         const uploaded = await deps.adapter.getUploadLength(entry.engineGid)
+        recordContribution(deps.userDataDir, task, uploaded)
         const reached =
           effectiveRatio === 0 ||
           (downloaded > 0 && uploaded >= downloaded * effectiveRatio)

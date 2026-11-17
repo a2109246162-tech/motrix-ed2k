@@ -88,3 +88,9 @@ Port `src/core/task/ed2k-sharing.ts`, `command:setEd2kShareRatio` and the right-
 - Right-click slider range 0–10, step 0.1; left 0 stops upload after completion, right 10 means 10x file size.
 - Default ratio 0.5; presets 0.5/1/2/10/unlimited.
 - Treat `aria2-next` as a supported engine so the non-Motrix warning and 16-connection cap do not trigger.
+
+## 10. Dashboard contribution
+
+- Add `ed2k-contribution.json` tracking to the sharing monitor: per-day and per-task upload deltas, 90-day retention.
+- Add a `getEd2kContribution` query and a dialog opened from the transfer tile.
+- The transfer tile must show **ED2K 已贡献** even when total transfer is zero.

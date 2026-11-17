@@ -161,3 +161,13 @@ The fork does not reimplement eD2k. It removes Motrix's protocol whitelist block
 - Server/Kad data: `upd.emule-security.org` and the Telemacore active-server list.
 
 See [`LICENSE`](./LICENSE), [`ATTRIBUTION.md`](./ATTRIBUTION.md), and [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md).
+
+## Dashboard contribution
+
+The dashboard's transfer tile shows **ED2K 已贡献** with the lifetime total uploaded by ED2K tasks. Click it to open a detail dialog with:
+
+- total contributed bytes
+- a day-by-day breakdown
+- the top tasks that received your upload for each day
+
+The counter is updated by the same 10-second monitor that enforces sharing ratios. It is stored in `ed2k-contribution.json` under the Motrix user-data directory and keeps 90 days of history.

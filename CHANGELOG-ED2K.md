@@ -55,3 +55,9 @@ Base: upstream Motrix v2.4.2 (`c601dcf`), with the macOS 12 compatibility patche
 
 - Added `ed2k-engine/diagnose.py` for live RPC inspection of LowID, server/Kad counts, port mapping and per-task peer counts.
 - Documented the measured state: LowID, Kad firewalled, UPnP off, one connected server, zero peers for the paused task.
+
+## Dashboard contribution
+
+- Added `ed2k-contribution.json` tracking in the sharing monitor: per-day, per-task upload deltas, 90-day retention.
+- Added `query:getEd2kContribution` and a detail dialog opened from the transfer tile.
+- The transfer tile now always shows **ED2K 已贡献**, including when total transfer is zero.

@@ -32,6 +32,7 @@ import type {
   TransferStatsRuntime,
 } from '@core/stats'
 import { createGetTaskHttpRetryAvailabilityHandler } from '@core/task/direct-task-retry'
+import { getEd2kContribution } from '@core/task/ed2k-sharing'
 import { createGetTaskPeersHandler } from '@core/task/get-task-peers'
 import { createGetTaskPiecesHandler } from '@core/task/get-task-pieces'
 import type { MediaMetaStore } from '@core/task/media-meta-store'
@@ -161,6 +162,8 @@ export function buildQueryHandlers(ctx: QueryContext): QueryHandlerMap {
 
     [Queries.GetTransferStats]: async (params: GetTransferStatsParams) =>
       transferStats.snapshot(params),
+
+    [Queries.GetEd2kContribution]: async () => getEd2kContribution(userDataDir),
 
     [Queries.GetTaskActivity]: async (params: GetTaskActivityParams) =>
       taskActivityService.snapshot(params),

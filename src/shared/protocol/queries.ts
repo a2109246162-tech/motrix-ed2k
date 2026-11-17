@@ -90,6 +90,7 @@ export const Queries = {
   // Dashboard
   GetSpeedHistory: 'query:getSpeedHistory',
   GetTransferStats: 'query:getTransferStats',
+  GetEd2kContribution: 'query:getEd2kContribution',
   GetTaskActivity: 'query:getTaskActivity',
   GetSpeedLimitState: 'query:getSpeedLimitState',
   // Notifications

@@ -25,6 +25,9 @@ type TransferScope = 'today' | 'allTime'
 export interface TransferTileProps {
   state: TransferStatsState
   viewport: DashboardTileViewport
+  /** Lifetime bytes uploaded by tasks whose source is an ED2K link. */
+  ed2kUploadBytes?: string
+  onOpenContribution?: () => void
   className?: string
 }
 
@@ -279,6 +282,8 @@ function LoadingContent({ viewport }: { viewport: DashboardTileViewport }) {
 export function TransferTile({
   state,
   viewport,
+  ed2kUploadBytes = '0',
+  onOpenContribution,
   className,
 }: TransferTileProps) {
   const { formatBytes } = useByteFormat()
@@ -385,6 +390,21 @@ export function TransferTile({
           >
             <TileTitle value={formattedTotal ?? '0 B'} />
           </section>
+
+          <button
+            type="button"
+            data-testid="transfer-ed2k-contribution"
+            onClick={onOpenContribution}
+            className={cn(
+              'flex shrink-0 items-baseline justify-between gap-2 rounded-sm text-left text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/50',
+              compact ? 'text-[9px]' : 'text-[10px]'
+            )}
+          >
+            <span>ED2K 已贡献 · 详情</span>
+            <span className="font-medium text-foreground">
+              {formatBytes(ed2kUploadBytes)}
+            </span>
+          </button>
 
           {compact ? (
             <div className="mt-auto grid gap-1.5">

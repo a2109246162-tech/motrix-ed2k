@@ -161,3 +161,13 @@ Motrix 渲染进程 / 主进程
 - 服务器/Kad 数据：`upd.emule-security.org` 与 Telemacore 活跃服务器列表。
 
 见 [`LICENSE`](./LICENSE)、[`ATTRIBUTION.md`](./ATTRIBUTION.md)、[`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md)。
+
+## 仪表盘贡献
+
+仪表盘的传输卡片会显示 **ED2K 已贡献**，数值是所有 ED2K 任务累计上传的流量。点击它打开明细弹窗：
+
+- 累计贡献总量
+- 按天拆分
+- 每天贡献给了哪些任务（显示前 3 个）
+
+计数由执行分享比例的同一个 10 秒监控器更新，保存在 Motrix 用户数据目录的 `ed2k-contribution.json`，保留最近 90 天。
